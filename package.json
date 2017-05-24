@@ -1,0 +1,34 @@
+{
+  "name": "ldap-oidc-provider",
+  "version": "1.0.0",
+  "description": "An OIDC Provider to work in LDAP environment.",
+  "main": "provider/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "oauth2",
+    "eduid",
+    "oidc",
+    "ldap",
+    "server",
+    "auth",
+    "authentication",
+    "identity",
+    "oauth",
+    "openid"
+  ],
+  "author": "Christian Glahn <cpglahn@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=6"
+  },
+  "dependencies": {
+    "oidc-provider": "^1.9.0",
+    "ldapjs": "^1.0.0",
+    "koa-body": "^1.6.0",
+    "koa-ejs": "^1.0.0",
+    "ioredis": "^2.5.0",
+    "forever": "^0.15.0"
+  }
+}

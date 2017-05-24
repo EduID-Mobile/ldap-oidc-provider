@@ -1,0 +1,379 @@
+attributetype (  1.3.6.1.4.1.40805.2.1.1 NAME 'authzAccessToken'
+        DESC 'OAuth 2.0 access token'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.28 NAME 'authzAccessTokenIssueDate'
+        DESC 'Access token issue date'
+        EQUALITY generalizedTimeMatch
+        ORDERING generalizedTimeOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.2 NAME 'authzAccessTokenLifetime'
+        DESC 'OAuth 2.0 access token lifetime, in seconds'
+        EQUALITY integerMatch
+        ORDERING integerOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.3 NAME 'authzAccessTokenEncoding'
+        DESC 'OAuth 2.0 access token encoding'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.23 NAME 'authzAccessTokenEncrypt'
+        DESC 'OAuth 2.0 access token encrypt flag'
+        EQUALITY booleanMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.4 NAME 'authzRefreshToken'
+        DESC 'OAuth 2.0 refresh token'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.5 NAME ('authzRefreshTokenSecret' 'authzRefreshTokenSalt')
+        DESC 'OAuth 2.0 refresh token secret'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.6 NAME 'authzIssueRefreshToken'
+        DESC 'OAuth 2.0 issue refresh token switch'
+        EQUALITY booleanMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.24 NAME 'authzRefreshTokenLifetime'
+        DESC 'OAuth 2.0 refresh token lifetime, in seconds'
+        EQUALITY integerMatch
+        ORDERING integerOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.25 NAME 'authzRefreshTokenIssueDate'
+        DESC 'Refresh token issue date'
+        EQUALITY generalizedTimeMatch
+        ORDERING generalizedTimeOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.7 NAME 'authzIssuer'
+        DESC 'Authorization issuer'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.8 NAME 'authzIssueDate'
+        DESC 'Authorization issue date'
+        EQUALITY generalizedTimeMatch
+        ORDERING generalizedTimeOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.9 NAME 'authzUpdateDate'
+        DESC 'Authorization issue date'
+        EQUALITY generalizedTimeMatch
+        ORDERING generalizedTimeOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.10 NAME 'authzSubject'
+        DESC 'Authorization subject'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.11 NAME 'authzClientID'
+        DESC 'Authorized client'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.12 NAME 'authzAudience'
+        DESC 'Authorized audience'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.13 NAME 'authzScopeValue'
+        DESC 'Authorized scope value'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.14 NAME 'authzSavedScopeValue'
+        DESC 'Saved scope value from a previous authorisation'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.15 NAME 'authzData'
+        DESC 'Auxiliary / unstructured authorization data, as JSON object'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.26 NAME 'authzActor'
+        DESC 'Authorized actor in impersonation and delegation cases'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.16 NAME 'authzLastAccessDate'
+        DESC 'Authorization last access date'
+        EQUALITY generalizedTimeMatch
+        ORDERING generalizedTimeOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.27 NAME 'authzRevocationDate'
+        DESC 'Authorization revocation date'
+        EQUALITY generalizedTimeMatch
+        ORDERING generalizedTimeOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OAuth 2.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.17 NAME 'oidcIDToken'
+        DESC 'OpenID Connect ID token'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OpenID Connect 1.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.18 NAME 'oidcClaimName'
+        DESC 'Consented OpenID Connect claim name, with optional language tag'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        USAGE userApplications
+        X-ORIGIN 'OpenID Connect 1.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.19 NAME 'oidcSavedClaimName'
+        DESC 'Saved consented OpenID Connect claim name from a previous authorisation, with optional language tag'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        USAGE userApplications
+        X-ORIGIN 'OpenID Connect 1.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.20 NAME 'oidcClaimsLocales'
+        DESC 'OpenID Connect claims locales, space separated, by order of preference'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OpenID Connect 1.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.21 NAME 'oidcPresetUserInfoClaims'
+        DESC 'Preset OpenID Connect UserInfo claims, as JSON object'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OpenID Connect 1.0' )
+attributetype (  1.3.6.1.4.1.40805.2.1.22 NAME 'oidcSessionID'
+        DESC 'Subject session identifier (SID)'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'OpenID Connect 1.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.1 NAME 'oauth2Authz'
+        DESC 'OAuth 2.0 authorization'
+        SUP top
+        STRUCTURAL
+        MUST (
+              authzSubject $
+              authzClientID )
+        MAY ( description $
+              authzAccessToken $
+              authzAccessTokenLifetime $
+              authzAccessTokenEncoding $
+              authzAccessTokenEncrypt $
+              authzRefreshToken $
+              authzRefreshTokenSecret $
+              authzIssueRefreshToken $
+              authzRefreshTokenLifetime $
+              authzRefreshTokenIssueDate $
+              authzIssuer $
+              authzIssueDate $
+              authzUpdateDate $
+              authzAudience $
+              authzScopeValue $
+              authzSavedScopeValue $
+              authzActor $
+              authzData $
+              authzLastAccessDate )
+        X-ORIGIN 'OAuth 2.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.2 NAME 'oauth2AuthzAux'
+        DESC 'OAuth 2.0 authorization'
+        SUP top
+        AUXILIARY
+        MUST (
+              authzSubject $
+              authzClientID )
+        MAY ( description $
+              authzAccessToken $
+              authzAccessTokenLifetime $
+              authzAccessTokenEncoding $
+              authzAccessTokenEncrypt $
+              authzRefreshToken $
+              authzRefreshTokenSecret $
+              authzIssueRefreshToken $
+              authzRefreshTokenLifetime $
+              authzRefreshTokenIssueDate $
+              authzIssuer $
+              authzIssueDate $
+              authzUpdateDate $
+              authzAudience $
+              authzScopeValue $
+              authzSavedScopeValue $
+              authzActor $
+              authzData $
+              authzLastAccessDate )
+        X-ORIGIN 'OAuth 2.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.3 NAME 'oidcAuthz'
+        DESC 'OAuth 2.0 / OpenID Connect authorization'
+        SUP oauth2Authz
+        STRUCTURAL
+        MAY ( oidcIDToken $
+              oidcClaimName $
+              oidcSavedClaimName $
+              oidcClaimsLocales $
+              oidcPresetUserInfoClaims $
+              oidcSessionID )
+        X-ORIGIN 'OAuth 2.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.4 NAME 'oidcAuthzAux'
+        DESC 'OAuth 2.0 / OpenID Connect authorization'
+        SUP oauth2AuthzAux
+        AUXILIARY
+        MAY ( oidcIDToken $
+              oidcClaimName $
+              oidcSavedClaimName $
+              oidcClaimsLocales $
+              oidcPresetUserInfoClaims $
+              oidcSessionID )
+        X-ORIGIN 'OAuth 2.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.5 NAME 'oauth2AuthzRevocation'
+        DESC 'OAuth 2.0 authorization revocation'
+        SUP top
+        STRUCTURAL
+        MUST ( authzRevocationDate )
+        MAY ( description $
+              authzSubject $
+              authzActor $
+              authzClientID )
+        X-ORIGIN 'OAuth 2.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.6 NAME 'oauth2AuthzRevocationAux'
+        DESC 'OAuth 2.0 authorization revocation'
+        SUP top
+        AUXILIARY
+        MUST ( authzRevocationDate )
+        MAY ( description $
+              authzSubject $
+              authzActor $
+              authzClientID )
+        X-ORIGIN 'OAuth 2.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.7 NAME 'oauth2IdAccessToken'
+        DESC 'OAuth 2.0 access token'
+        SUP top
+        STRUCTURAL
+        MUST ( authzAccessToken )
+        MAY ( description $
+              authzSubject $
+              authzClientID $
+              authzAccessTokenIssueDate $
+              authzAccessTokenLifetime $
+              authzIssuer $
+              authzAudience $
+              authzScopeValue $
+              authzActor $
+              authzData )
+        X-ORIGIN 'OAuth 2.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.8 NAME 'oauth2IdAccessTokenAux'
+        DESC 'OAuth 2.0 access token'
+        SUP top
+        AUXILIARY
+        MUST ( authzAccessToken )
+        MAY ( description $
+              authzSubject $
+              authzClientID $
+              authzAccessTokenIssueDate $
+              authzAccessTokenLifetime $
+              authzIssuer $
+              authzAudience $
+              authzScopeValue $
+              authzActor $
+              authzData )
+        X-ORIGIN 'OAuth 2.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.9 NAME 'oidcIdAccessToken'
+        DESC 'OAuth 2.0 / OpenID Connect access token'
+        SUP oauth2IdAccessToken
+        STRUCTURAL
+        MAY ( oidcClaimName $
+              oidcClaimsLocales $
+              oidcPresetUserInfoClaims )
+        X-ORIGIN 'OAuth 2.0' )
+objectclass ( 1.3.6.1.4.1.40805.2.2.10 NAME 'oidcIdAccessTokenAux'
+        DESC 'OAuth 2.0 / OpenID Connect access token'
+        SUP oauth2IdAccessTokenAux
+        AUXILIARY
+        MAY ( oidcClaimName $
+              oidcClaimsLocales $
+              oidcPresetUserInfoClaims )
+        X-ORIGIN 'OAuth 2.0' )

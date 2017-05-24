@@ -1,0 +1,145 @@
+attributetype ( 1.3.6.1.4.1.40805.3.1.1 NAME 'sessionKey'
+        DESC 'Session key'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.2 NAME 'sessionN'
+        DESC 'Session number'
+        EQUALITY integerMatch
+        ORDERING integerOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.3 NAME 'sessionSubject'
+        DESC 'Session subject'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype (  1.3.6.1.4.1.40805.3.1.4 NAME 'sessionAuthDate'
+        DESC 'Subject authentication date'
+        EQUALITY generalizedTimeMatch
+        ORDERING generalizedTimeOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.5 NAME 'sessionACR'
+        DESC 'Authentication Context Class Reference (ACR) for the session'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.6 NAME 'sessionAMR'
+        DESC 'Authentication Method Reference (AMR) for the session'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype (  1.3.6.1.4.1.40805.3.1.7 NAME 'sessionCreationDate'
+        DESC 'Session creation date'
+        EQUALITY generalizedTimeMatch
+        ORDERING generalizedTimeOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype (  1.3.6.1.4.1.40805.3.1.8 NAME 'sessionLastAccessDate'
+        DESC 'Session last access date'
+        EQUALITY generalizedTimeMatch
+        ORDERING generalizedTimeOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.9 NAME 'sessionMaxLife'
+        DESC 'Session max life time, in minutes, unlimited if negative'
+        EQUALITY integerMatch
+        ORDERING integerOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.10 NAME 'sessionAuthLife'
+        DESC 'Session authentication life time, in minutes, unlimited if negative'
+        EQUALITY integerMatch
+        ORDERING integerOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.11 NAME 'sessionMaxIdle'
+        DESC 'Session max idle time, in minutes, unlimited if negative'
+        EQUALITY integerMatch
+        ORDERING integerOrderingMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.12 NAME 'sessionClaims'
+        DESC 'Session claims, as JSON object'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.14 NAME 'sessionRelyingParty'
+        DESC 'Logged-in OpenID relying party'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+attributetype ( 1.3.6.1.4.1.40805.3.1.13 NAME 'sessionData'
+        DESC 'Auxiliary session data, as JSON object'
+        EQUALITY caseExactMatch
+        ORDERING caseExactOrderingMatch
+        SUBSTR caseExactSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        USAGE userApplications
+        X-ORIGIN 'Connect2id Session Store' )
+objectclass ( 1.3.6.1.4.1.40805.3.2.1 NAME 'subjectSession'
+        DESC 'OpenID Connect subject session'
+        SUP top
+        STRUCTURAL
+        MUST ( sessionKey $
+               sessionSubject $
+               sessionAuthDate $
+               sessionCreationDate $
+               sessionLastAccessDate )
+        MAY ( description $
+              sessionACR $
+              sessionAMR $
+              sessionMaxLife $
+              sessionAuthLife $
+              sessionMaxIdle $
+              sessionClaims $
+              sessionRelyingParty $
+              sessionData )
+        X-ORIGIN 'Connect2id Session Store' )
+objectclass ( 1.3.6.1.4.1.40805.3.2.2 NAME 'subjectIndex'
+        DESC 'OpenID Connect subject session index'
+        SUP top
+        STRUCTURAL
+        MUST ( sessionSubject $
+               sessionN $
+               sessionKey )
+        MAY ( description )
+        X-ORIGIN 'Connect2id Session Store' )
