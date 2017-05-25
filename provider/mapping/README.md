@@ -16,8 +16,8 @@ A mapping can be one of the following types
     objects.
 
 1:n flat mappings will look for the first attribute set in the list
-being set in the LDAP entry. The result will be returned. All other
-attribute names for the claim are ignored.
+being set in the LDAP entry. The first matching attribute will yield the result.
+All other attribute names listed for the claim are ignored.
 
 1:n structured mappings work similarly to the flat mappings. The main
 difference is that these mappings are key value pairs, with the key

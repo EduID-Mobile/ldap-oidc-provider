@@ -12,8 +12,8 @@ This version has been tested on both, LTS and the Current version of Node.
 1.  Have access to an LDAP repository.
 2.  Install REDIS on the local machine.
 3.  Download eduid-oidc to the local machine and unpack it.
-4.  Run ```cd eduid-oidc; npm install```
-5.  change the file ```eduid_settings.js``` to match your environment
+4.  Run ```cd ldap-oidc-provider; npm install```
+5.  change the file ```provider_settings.js``` to match your environment
 6.  Run ```node provider```
 7.  Create a Web-server Proxy, so nodejs is not directly exposed.
 
@@ -107,11 +107,13 @@ module.exports.directory = {
 };
 ```
 
-LDAP Provider acknowledges that identity management in different institutions
+LDAP Provider acknowledges that identity management in different organizations
 is based on different schemas. This implementation allows administrators to
 create their own mappings from LDAP to OIDC user profiles.
 
-The core mappings work fine with the [provided LDAP schemas](schemas).
+The core mappings work fine with the [provided LDAP schemas](schemas). In order
+to work with custom local schemas, it is required to customize the mapping rules
+in the [```provider/mapping```](provider/mapping) directory.
 
 #### Generating cryptographic keys
 
@@ -132,7 +134,7 @@ the tools folder.
 node mkjwk.js 2048 > private.jwk
 ```
 
-Will generate a new 2048 bit private key.
+The above command Will generate a new 2048 bit private RSA key.
 
 ### Manage OAuth2 and OIDC Services in a LDAP Directory
 
@@ -161,4 +163,10 @@ information.
 
 ## Web Server Configuration
 
+It is recommended to mask the OIDC provider behind a web-server/proxy server.
+
 ### Apache Configuration
+
+On Apache 2.4 one needs to activate the proxy module and using the
+[ProxyPass](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html#proxypass)
+configuration that points to the configured port on the installation server.
