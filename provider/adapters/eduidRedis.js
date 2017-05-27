@@ -12,9 +12,9 @@
 const Redis = require("ioredis"); // eslint-disable-line import/no-unresolved
 const _ = require("lodash");
 
-const eduid = require("../eduid_settings.js");
+const settings = require("../../configuration/settings.js");
 
-const client = new Redis(eduid.urls.redis, {
+const client = new Redis(settings.directory.redis.url, {
     keyPrefix: "oidc:"
 });
 

@@ -1,6 +1,9 @@
 /* eslint-disable */
 'use strict';
 
+// this part is for reference kept from oidc-provider it has no function and
+// should not be used here.
+
 class MyAdapter {
 
   /**

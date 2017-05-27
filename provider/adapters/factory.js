@@ -1,8 +1,8 @@
 "use strict";
 
-const RedisAdapter   = require("./adapters/eduidRedis.js");
-const LdapAdapter    = require("./adapters/ldap.js");
-const cfg = require("../eduid_settings");
+const RedisAdapter   = require("./eduidRedis");
+const LdapAdapter    = require("./ldap");
+const cfg = require("../../configuration/settings");
 
 module.exports = function AdapterFactory() {
     let ldapTypes = Object.keys(cfg.directoryOrganisation);
