@@ -117,26 +117,27 @@ The core mappings work fine with the [provided LDAP schemas](schemas). In order
 to work with custom local schemas, it is required to customize the mapping rules
 in the [```provider/mapping```](provider/mapping) directory.
 
-#### Generating cryptographic keys
+#### Cryptographic keys
 
-The OIDC provider relies on JWK keys. Therefore, any OpenSSL keys must be
-converted to JWK. For this purpose you can use the ```pem2jwk.js``` tool in the
-tools folder.
+OIDC relies on encryption. The provider needs to have access to its own keys.
 
-The tool will read PEM keys and output them as JWK.
+The OIDC provider supports two types of keys.
 
-```
-node pem2jwk.js private.pem > private.jwk
-```
+1.  External keys, used for signing and encrypting data that is exchanged with
+    clients.
+2.  Internal keys for guaranteeing the integrity of internal data (including
+    Cookies).
 
-Alternatively one can generate fresh RSA keys using the ```mkjwk.js``` tool in
-the tools folder.
+For external keys it is recommended to use RSA or Elliptic Curve encryption.
+For internal keys it is sufficient to use octet keys. Normally one internal key
+is sufficient.
 
-```
-node mkjwk.js 2048 > private.jwk
-```
+The provider can automatically import the server keys from different
+locations. PEM formatted keys can be imported on the fly during startup from a
+directory.
 
-The above command Will generate a new 2048 bit private RSA key.
+For pointing the provider to the correct locations for obtaining its keys, use
+the certificates configuration in the ```configuration/settings.js```-file.
 
 ### Manage OAuth2 and OIDC Services in a LDAP Directory
 

@@ -28,7 +28,6 @@ class RedisAdapter {
                 keyPrefix: `${cfg.redis[connName].prefix}:`
             });
         }
-
     }
 
     key(id) {
