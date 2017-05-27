@@ -97,6 +97,8 @@ function findClaim(claim, source, map) {
             // until we found a match
             for (j = 0; j < attr.length; j++) {
                 if (source[attr[j]]) {
+                    let rv;
+
                     if (co.label && co.label.length && source[attr[j]][co.label]) {
                         return source[attr[j]][co.label];
                     }
@@ -104,8 +106,6 @@ function findClaim(claim, source, map) {
                         return source[attr[j]] + `@${co.suffix}`;
                     }
                     if (co.json) {
-                        let rv;
-
                         try {
                             rv = JSON.parse(source[attr[j]]);
                         }
@@ -114,6 +114,27 @@ function findClaim(claim, source, map) {
                             rv = null;
                         }
 
+                        return rv;
+                    }
+                    if (co.separator) {
+                        rv = source[attr[j]].split(co.separator);
+                        if (rv && co.assign) {
+                            let ti = 1, ai = 0, trv = {};
+
+                            for (ai = 0; ai < co.assign.length && ai < rv.length; ai++) {
+                                ti = ai + 1;
+
+                                trv[co.assign[co.assign.length - ti]] = rv[rv.length - ti];
+                            }
+
+                            if (rv.length - ti > 0) {
+                                // convert first item to array
+                                trv[co.assign[0]] = rv.splice(0, rv.length - ti + 1);
+                                // stash all remaining elements to the array
+                            }
+
+                            rv = trv;
+                        }
                         return rv;
                     }
                 }

@@ -17,6 +17,8 @@ describe("MapClaims", () => {
         "labeled": [{attribute: "labeledUri", label: "test"}],
         "processed": [{attribute: "data", json: true}],
         "mixed": ["uri", {"attribute": "labeledUri", "label": "mixed"}],
+        "split": [{"attribute": "spl", "separator": "$"},
+                  {"attribute": "spla", "separator": ";", "assign": ["tre", "two", "one"]}]
     };
     const forceArray = ["flat"];
 
@@ -218,5 +220,70 @@ describe("MapClaims", () => {
         expect(result.deep.sub).to.have.keys("set");
         expect(result.deep.sub.set).to.be.a("string");
         expect(result.deep.sub.set).to.equal("hello");
+    });
+
+    it("split mapping", () => {
+        const source = {
+            spl: "foo$bar$baz"
+        };
+
+        const result = mapClaims(mapping, source);
+
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("split");
+        expect(result.split).to.be.an("array");
+        expect(result.split).to.have.lengthOf(3);
+        expect(result.split[0]).to.be.equal("foo");
+        expect(result.split[1]).to.be.equal("bar");
+        expect(result.split[2]).to.be.equal("baz");
+    });
+
+    it("split assign mapping fit", () => {
+        const source = {
+            spla: "foo;bar;baz"
+        };
+
+        const result = mapClaims(mapping, source);
+
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("split");
+        expect(result.split).to.be.an("object");
+        expect(result.split).to.have.keys("one", "two", "tre");
+        expect(result.split.one).to.be.equal("baz");
+        expect(result.split.two).to.be.equal("bar");
+        expect(result.split.tre).to.be.equal("foo");
+    });
+
+    it("split assign mapping short", () => {
+        const source = {
+            spla: "bar;baz"
+        };
+
+        const result = mapClaims(mapping, source);
+
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("split");
+        expect(result.split).to.be.an("object");
+        expect(result.split).to.have.keys("two", "one");
+        expect(result.split.one).to.be.equal("baz");
+        expect(result.split.two).to.be.equal("bar");
+    });
+
+    it("split assign mapping long", () => {
+        const source = {
+            spla: "fee;foo;bar;baz"
+        };
+
+        const result = mapClaims(mapping, source);
+
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("split");
+        expect(result.split).to.be.an("object");
+        expect(result.split).to.have.keys("one", "two", "tre");
+        expect(result.split.one).to.be.equal("baz");
+        expect(result.split.two).to.be.equal("bar");
+        expect(result.split.tre).to.be.an("array");
+        expect(result.split.tre).to.have.lengthOf(2);
+        expect(result.split.tre.join(" ")).to.be.equal("fee foo");
     });
 });

@@ -46,16 +46,34 @@ OIDC requires single values.
 In order to use the mapping logic, an adapter has to import the
 ```mapping/map_claims``` module.
 
+Sometimes, LDAP attributes are organized as non-semantic sets, that are mapped
+onto strings using a separator. A mapping can process these attributes into
+claim sets using the split mapping. Split mappings are structured mappings that
+have a ```separator```-property. This property contains the set delimiter for
+the set. If used solitarily, this will convert an attribute value into an array
+of values. Additionally, the mapping can be extended with an
+```assign```-property. The ```assign```-property contains a list of keys onto
+which the set will be mapped into an key-value-pair object. The values of the
+assign property are used as keys in this mapping. The mapping will process the
+assign-list in reverse order, so if there are fewer values in the set, the
+later listed keys are assigned to the values of the set. If the set has more
+values than the assign property, the key listed first will pull all values into
+an array. Note that such split-assignment is limited and should be used only,
+if no semantic alternative is available.
+
 ## Example
 
 ```
 {
-  "family_name": ["sn", "surname"], // 1:n flat mapping
-  "middle_name": [],                // no mapping
-  "nickname": "displayName",        // 1:1 mapping
-  "locale": ["preferredLanguage"],  // 1:1 mapping masked as 1:n flat.
-  "profile": [{"attribute": "labeledURI", "label": "profile"}], // 1:n structured
-  "jwks": [{"attribute": "jwks", "json": true}], // json mapping
-  "address.postal_code": ["postalCode"] // subset mapping
+  "family_name": ["sn", "surname"],                                    // 1:n flat mapping
+  "middle_name": [],                                                   // no mapping
+  "nickname": "displayName",                                           // 1:1 mapping
+  "locale": ["preferredLanguage"],                                     // 1:1 mapping masked as 1:n flat mapping.
+  "profile": [{"attribute": "labeledURI", "label": "profile"}],        // 1:n structured
+  "jwks": [{"attribute": "jwks", "json": true}],                       // json processing
+  "address.home": [{"attribute": "homeAddress",
+                    "separator": "$",                                  // set processing
+                    "assign": ["street_name", "postal_code", "city"]}] // split-assignment
+  "address.postal_code": ["postalCode"]                                // subset mapping
 }
 ```
