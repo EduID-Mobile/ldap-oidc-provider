@@ -13,9 +13,11 @@ This version has been tested on both, LTS and the Current version of Node.
 2.  Install REDIS on the local machine.
 3.  Download eduid-oidc to the local machine and unpack it.
 4.  Run ```cd ldap-oidc-provider; npm install```
-5.  change the file ```provider_settings.js``` to match your environment
-6.  Run ```node provider```
-7.  Create a Web-server Proxy, so nodejs is not directly exposed.
+5.  change the file ```configuration/settings.js``` to match your environment
+6.  copy your local keys in to the key directories.
+8.  Create a Web-server Proxy, so nodejs is not directly exposed and restart the
+    web-server.
+9.  Run ```npm start```
 
 ### Advanced configuration
 

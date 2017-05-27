@@ -4,7 +4,8 @@
   "description": "An OIDC Provider to work in LDAP environment.",
   "main": "provider/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node provider/index.js",
+    "test": "mocha"
   },
   "keywords": [
     "oauth2",
@@ -30,5 +31,12 @@
     "koa-ejs": "^1.0.0",
     "ioredis": "^2.5.0",
     "forever": "^0.15.0"
-  }
+  },
+  "devDependencies": {
+      "eslint": "^3.0.0",
+      "chai": "^3.5.0",
+      "co-mocha": "^1.1.2",
+      "mocha": "^3.0.0"
+  },
+  "repository": "BLC-HTWChur/ldap-oidc-provider"
 }
