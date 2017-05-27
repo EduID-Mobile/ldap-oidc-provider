@@ -44,8 +44,19 @@ module.exports.directory = {
     //     base: "dc=local,dc=dev",
     //     password: "oidc"
     // }
-    redis: {
-        url: "redis://192.168.56.106/1"
+};
+
+/**
+ * the redis settings are used for the core redis connections.
+ *
+ * this allows one to distribute data across different redis servers.
+ * The labels for the connections should be either common (default) or the
+ * adapter names.
+ */
+module.exports.redis = {
+    common: {
+        url: "redis://127.0.0.1/1",
+        prefix: "oidc"
     }
 };
 
