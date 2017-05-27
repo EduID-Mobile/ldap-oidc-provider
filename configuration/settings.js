@@ -80,12 +80,6 @@ module.exports.directoryOrganisation = {
         class: "organizationalRole",
         id: "cn",
         source: "common",
-    },
-    // client credentials SHOULD be the same as the Client.
-    "ClientCredentials": {
-        class: "organizationalRole",
-        id: "cn",
-        source: "common",
     }
 };
 
