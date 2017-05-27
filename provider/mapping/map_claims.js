@@ -110,7 +110,8 @@ function findClaim(claim, source, map) {
                             rv = JSON.parse(source[attr[j]]);
                         }
                         catch (err) {
-                            console.log("JSON ERROR: " + err.message); // eslint-disable-line no-console
+                            // console.log("JSON PROCESSING ERROR: " + err.message); // eslint-disable-line no-console
+                            rv = null;
                         }
 
                         return rv;
