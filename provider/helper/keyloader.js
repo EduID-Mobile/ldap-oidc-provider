@@ -52,8 +52,8 @@ class KeyLoader {
         return Promise.resolve(tdata);
     }
 
-    addKey(key) {
-        return this.ks.add(key)
+    addKey(key, form = null) {
+        return this.ks.add(key, form)
             .catch(err => { // eslint-disable-line no-unused-vars
                 // clear the error
                 return Promise.resolve();
@@ -66,8 +66,11 @@ class KeyLoader {
                 // add each key in keys
                 return Promise.all(key.keys.map(k => this.addKey(k)));
             }
-            else {
+            else if (key.kty) {
                 return this.addKey(key);
+            }
+            else {
+                return this.addKey(key, "pem");
             }
         }
         return Promise.resolve();

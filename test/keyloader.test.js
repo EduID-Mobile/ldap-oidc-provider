@@ -163,7 +163,7 @@ describe("KeyLoader", function() {
     });
 
     it("load file", (done) => {
-        const fn = "test/helper/loadFile.helper";
+        const fn = "test/helper/file/loadFile.helper";
         const kl = new KeyLoader();
 
         kl.loadFile(fn)
@@ -177,7 +177,7 @@ describe("KeyLoader", function() {
     });
 
     it("load folder", (done) => {
-        const fn = "test/helper";
+        const fn = "test/helper/file";
         const kl = new KeyLoader();
 
         kl.readDir(fn)
@@ -206,6 +206,27 @@ describe("KeyLoader", function() {
                 expect(json.keys[0]).to.be.an("object");
                 expect(json.keys[0]).to.have.keys("kty", "k", "alg", "kid");
                 expect(json.keys[0].kty).to.be.equal("oct");
+                done();
+            })
+            .catch((err) => {
+                done(err);
+            });
+    });
+
+    it("load pem key atomic", (done) => {
+        const fn = "test/helper/pemkeys/private.pem";
+        const kl = new KeyLoader();
+
+        kl.loadKey(fn)
+            .then(() => {
+                const json = kl.keys;
+                expect(json).to.be.an("object");
+                expect(json).to.have.keys("keys");
+                expect(json.keys).to.be.an("array");
+                expect(json.keys).to.have.lengthOf(1);
+                expect(json.keys[0]).to.be.an("object");
+                expect(json.keys[0]).to.have.keys("kty", "d", "kid", "dp", "dq", "e", "n", "p", "q", "qi");
+                expect(json.keys[0].kty).to.be.equal("RSA");
                 done();
             })
             .catch((err) => {
@@ -269,6 +290,30 @@ describe("KeyLoader", function() {
                 expect(json.keys[0]).to.be.an("object");
                 expect(json.keys[0]).to.have.keys("kty", "d", "use", "kid", "dp", "dq", "e", "n", "p", "q", "qi");
                 expect(json.keys[0].kty).to.be.equal("RSA");
+                done();
+            })
+            .catch((err) => {
+                done(err)
+            });
+    });
+
+    it("load pem from key directory multi keys", (done) => {
+        const fn = "test/helper/pemkeys";
+        const kl = new KeyLoader();
+
+        kl.loadKeyDir(fn)
+            .then(() => {
+                const json = kl.keys;
+                expect(json).to.be.an("object");
+                expect(json).to.have.keys("keys");
+                expect(json.keys).to.be.an("array");
+                expect(json.keys).to.have.lengthOf(2);
+                expect(json.keys[0]).to.be.an("object");
+                expect(json.keys[0]).to.have.keys("kty", "kid", "x5t", "e", "n");
+                expect(json.keys[0].kty).to.be.equal("RSA");
+                expect(json.keys[1]).to.be.an("object");
+                expect(json.keys[1]).to.have.keys("kty", "d", "kid", "dp", "dq", "e", "n", "p", "q", "qi");
+                expect(json.keys[1].kty).to.be.equal("RSA");
                 done();
             })
             .catch((err) => {
