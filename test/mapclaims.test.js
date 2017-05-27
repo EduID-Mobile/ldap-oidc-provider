@@ -6,7 +6,7 @@ const { expect } = require("chai");
 
 const mapClaims = require("../provider/mapping/map_claims");
 
-describe("MapClaims", () => {
+describe("MapClaims", function() {
     let mapping = {
         "direct": "dm",
         "masked_direct": ["mdm"],
@@ -22,7 +22,7 @@ describe("MapClaims", () => {
     };
     const forceArray = ["flat"];
 
-    it("direct mapping", () => {
+    it("direct mapping", function() {
         const source = {
             "dm": "hello"
         };
@@ -36,7 +36,7 @@ describe("MapClaims", () => {
 
     });
 
-    it("masked direct mapping", () => {
+    it("masked direct mapping", function() {
         const source = {
             "mdm": "hello"
         };
@@ -49,7 +49,7 @@ describe("MapClaims", () => {
         expect(result.masked_direct).to.be.equal("hello");
     });
 
-    it("missing", () => {
+    it("missing", function() {
         const source = {
             "missing": "hello"
         };
@@ -60,7 +60,7 @@ describe("MapClaims", () => {
         expect(result).to.be.empty;
     });
 
-    it("flat mapping simple first", () => {
+    it("flat mapping simple first", function() {
         const source = {
             f1: "hello"
         };
@@ -72,7 +72,7 @@ describe("MapClaims", () => {
         expect(result.flat).to.be.equal("hello");
     });
 
-    it("flat mapping simple second", () => {
+    it("flat mapping simple second", function() {
         const source = {
             flatTest: "world"
         };
@@ -84,7 +84,7 @@ describe("MapClaims", () => {
         expect(result.flat).to.be.equal("world");
     });
 
-    it("flat mapping duplicate", () => {
+    it("flat mapping duplicate", function() {
         const source = {
             f1: "hello",
             flatTest: "world"
@@ -97,7 +97,7 @@ describe("MapClaims", () => {
         expect(result.flat).to.be.equal("hello");
     });
 
-    it("flat mapping simple array", () => {
+    it("flat mapping simple array", function() {
         const source = {
             f1: ["hello", "world"]
         };
@@ -110,7 +110,7 @@ describe("MapClaims", () => {
         expect(result.flat.join(" ")).to.be.equal("hello world");
     });
 
-    it("skip mapping", () => {
+    it("skip mapping", function() {
         const source = {
             f1: "hello",
             f2: "world"
@@ -123,7 +123,7 @@ describe("MapClaims", () => {
         expect(result.flat).to.be.equal("hello");
     });
 
-    it("forceArray", () => {
+    it("forceArray", function() {
         const source = {
             f1: "hello"
         };
@@ -136,7 +136,7 @@ describe("MapClaims", () => {
         expect(result.flat.join(" ")).to.be.equal("hello");
     });
 
-    it("labeled mapping", () => {
+    it("labeled mapping", function() {
         const source = {
             labeledUri: {test: "hello"}
         };
@@ -148,7 +148,7 @@ describe("MapClaims", () => {
         expect(result.labeled).to.be.equal("hello");
     });
 
-    it("json mapping ok", () => {
+    it("json mapping ok", function() {
         const source = {
             data: '{"test": "hello"}'
         };
@@ -161,7 +161,7 @@ describe("MapClaims", () => {
         expect(result.processed.test).to.be.equal("hello");
     });
 
-    it("json mapping broken", () => {
+    it("json mapping broken", function() {
         const source = {
             data: '{"test": "hello"'
         };
@@ -170,7 +170,7 @@ describe("MapClaims", () => {
         expect(result).to.be.empty;
     });
 
-    it("mixed mapping flat", () => {
+    it("mixed mapping flat", function() {
         const source = {
             uri: "hello"
         };
@@ -182,7 +182,7 @@ describe("MapClaims", () => {
         expect(result.mixed).to.be.equal("hello");
     });
 
-    it("mixed mapping complex", () => {
+    it("mixed mapping complex", function() {
         const source = {
             labeledUri: { mixed: "hello" }
         };
@@ -194,7 +194,7 @@ describe("MapClaims", () => {
         expect(result.mixed).to.be.equal("hello");
     });
 
-    it("subset mapping simple", () => {
+    it("subset mapping simple", function() {
         const source = {
             s: "hello"
         };
@@ -207,7 +207,7 @@ describe("MapClaims", () => {
         expect(result.sub.set).to.equal("hello");
     });
 
-    it("subset mapping deep", () => {
+    it("subset mapping deep", function() {
         const source = {
             dss: "hello"
         };
@@ -222,7 +222,7 @@ describe("MapClaims", () => {
         expect(result.deep.sub.set).to.equal("hello");
     });
 
-    it("split mapping", () => {
+    it("split mapping", function() {
         const source = {
             spl: "foo$bar$baz"
         };
@@ -238,7 +238,7 @@ describe("MapClaims", () => {
         expect(result.split[2]).to.be.equal("baz");
     });
 
-    it("split assign mapping fit", () => {
+    it("split assign mapping fit", function() {
         const source = {
             spla: "foo;bar;baz"
         };
@@ -254,7 +254,7 @@ describe("MapClaims", () => {
         expect(result.split.tre).to.be.equal("foo");
     });
 
-    it("split assign mapping short", () => {
+    it("split assign mapping short", function() {
         const source = {
             spla: "bar;baz"
         };
@@ -269,7 +269,7 @@ describe("MapClaims", () => {
         expect(result.split.two).to.be.equal("bar");
     });
 
-    it("split assign mapping long", () => {
+    it("split assign mapping long", function() {
         const source = {
             spla: "fee;foo;bar;baz"
         };

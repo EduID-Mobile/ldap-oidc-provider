@@ -6,11 +6,11 @@ const { expect } = require("chai");
 const KeyLoader = require("../provider/helper/keyloader");
 
 describe("KeyLoader", function() {
-    it("loads", () => {
+    it("loads", function() {
         expect(KeyLoader).to.be.a("function");
     });
 
-    it("init", () => {
+    it("init", function() {
         const kl = new KeyLoader();
         expect(kl).to.be.an("object");
         expect(kl.ks).to.be.an("object");
@@ -20,7 +20,7 @@ describe("KeyLoader", function() {
         expect(json.keys).to.be.empty;
     });
 
-    it("check file good", (done) => {
+    it("check file good", function(done) {
         // note we test against the mocha context and thus the path is at the
         // project root
         const fnGood = "configuration/settings.js";
@@ -36,7 +36,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("check file bad", (done) => {
+    it("check file bad", function(done) {
         // note we test against the mocha context and thus the path is at the
         // project root
         const fnBad = "configuration/bad.js";
@@ -52,7 +52,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("check file with directory", (done) => {
+    it("check file with directory", function(done) {
         // note we test against the mocha context and thus the path is at the
         // project root
         const fnBad = "configuration/keys";
@@ -68,7 +68,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("check directory good", (done) => {
+    it("check directory good", function(done) {
         // note we test against the mocha context and thus the path is at the
         // project root
         const fnGood = "configuration/keys";
@@ -84,7 +84,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("check directory with a file", (done) => {
+    it("check directory with a file", function(done) {
         // note we test against the mocha context and thus the path is at the
         // project root
         const fnBad = "configuration/settings.js";
@@ -100,7 +100,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("check directory with bad name", (done) => {
+    it("check directory with bad name", function(done) {
         // note we test against the mocha context and thus the path is at the
         // project root
         const fnBad = "configuration/bad";
@@ -116,7 +116,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("parse jwk good", (done) => {
+    it("parse jwk good", function(done) {
         const goodJWK = '{"kty": "RSA"}';
         const kl = new KeyLoader();
 
@@ -132,7 +132,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("parse jwks good", (done) => {
+    it("parse jwks good", function(done) {
         const goodJWK = '{"keys": []}';
         const kl = new KeyLoader();
 
@@ -148,7 +148,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("parse jwk bad", (done) => {
+    it("parse jwk bad", function(done) {
         const badJWK = 'foobar';
         const kl = new KeyLoader();
 
@@ -162,7 +162,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("load file", (done) => {
+    it("load file", function(done) {
         const fn = "test/helper/file/loadFile.helper";
         const kl = new KeyLoader();
 
@@ -176,7 +176,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("load folder", (done) => {
+    it("load folder", function(done) {
         const fn = "test/helper/file";
         const kl = new KeyLoader();
 
@@ -192,7 +192,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("load jwk key atomic", (done) => {
+    it("load jwk key atomic", function(done) {
         const fn = "configuration/integrity.jwk";
         const kl = new KeyLoader();
 
@@ -213,7 +213,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("load pem key atomic", (done) => {
+    it("load pem key atomic", function(done) {
         const fn = "test/helper/pemkeys/private.pem";
         const kl = new KeyLoader();
 
@@ -234,7 +234,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("load jwk key store single", (done) => {
+    it("load jwk key store single", function(done) {
         const fn = "configuration/integrity.jwks";
         const kl = new KeyLoader();
 
@@ -255,7 +255,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("load jwk key store multi", (done) => {
+    it("load jwk key store multi", function(done) {
         const fn = "configuration/keys/example.jwks";
         const kl = new KeyLoader();
 
@@ -276,7 +276,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("load jwk from key directory multi keys", (done) => {
+    it("load jwk from key directory multi keys", function(done) {
         const fn = "configuration/keys";
         const kl = new KeyLoader();
 
@@ -297,7 +297,7 @@ describe("KeyLoader", function() {
             });
     });
 
-    it("load pem from key directory multi keys", (done) => {
+    it("load pem from key directory multi keys", function(done) {
         const fn = "test/helper/pemkeys";
         const kl = new KeyLoader();
 
