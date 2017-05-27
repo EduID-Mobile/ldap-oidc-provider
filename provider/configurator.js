@@ -39,7 +39,7 @@ settings.interactionUrl = function (ia) { // eslint-disable-line no-unused-vars
     return `${confirmUrl}${this.oidc.uuid}`;
 };
 
-settings.adapter = AdapterFactory();
+settings.adapter = AdapterFactory(cfg);
 
 if (cfg.urls.homepage) {
     settings.discovery.service_documentation = cfg.urls.homepage;

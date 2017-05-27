@@ -1,13 +1,12 @@
 "use strict";
 
-const Settings = require("../../configuration/settings.js");
 const LDAPConnection = require("./ldapconnection.js");
 
 const connection = {};
 
-module.exports = function findLdapConnection(name) {
-    if (name !== "redis" && !connection[name] && Settings.directory[name]) {
-        connection[name] = new LDAPConnection(Settings.directory[name]);
+module.exports = function findLdapConnection(name, settings) {
+    if (!connection[name] && settings.directory[name]) {
+        connection[name] = new LDAPConnection(settings.directory[name]);
     }
     return connection[name];
 };

@@ -12,19 +12,23 @@
 const Redis = require("ioredis"); // eslint-disable-line import/no-unresolved
 const _ = require("lodash");
 
-const settings = require("../../configuration/settings.js");
-
-const client = new Redis(settings.directory.redis.url, {
-    keyPrefix: "oidc:"
-});
+const client = {};
 
 function grantKeyFor(id) {
     return `grant:${id}`;
 }
 
 class RedisAdapter {
-    constructor(name) {
+    constructor(name, cfg) {
         this.name = name;
+        const connName = cfg.redis[name] ? "name" : "common";
+
+        if (!client[connName]) {
+            client[connName] = new Redis(cfg.redis[connName].url, {
+                keyPrefix: `${cfg.redis[connName].prefix}:`
+            });
+        }
+
     }
 
     key(id) {

@@ -12,7 +12,6 @@
  * the adapter will do two requests on the same information.
  */
 
-const settings = require("../../configuration/settings");
 const getMapping = require("../mapping");
 const mapClaims = require("../mapping/map_claims");
 const findConnection = require("./ldapmanager");
@@ -40,10 +39,10 @@ class LdapClientAdapter {
    * "RegistrationAccessToken"
    *
    */
-    constructor(name) {
+    constructor(name, cfg) {
         this.name = name;
-        this.org  = settings.directoryOrganisation[name];
-        this.ldap = findConnection(this.org.source);
+        this.org  = cfg.directoryOrganisation[name];
+        this.ldap = findConnection(this.org.source, cfg);
         this.mapping = getMapping(name);
 
     }
