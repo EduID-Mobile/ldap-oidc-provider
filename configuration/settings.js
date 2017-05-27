@@ -34,16 +34,19 @@
 module.exports.directory = {
     common: {
         url: "ldap://192.168.56.102:389",
-        serviceDN: "cn=oidc,ou=configurations,dc=local,dc=dev",
-        baseDN: "dc=local,dc=dev",
-        servicePassword: "oidc"
+        bind: "cn=oidc,ou=configurations,dc=local,dc=dev",
+        base: "dc=local,dc=dev",
+        password: "oidc"
     },
     // federation: {
     //     url: "ldap://192.168.56.105:389",
-    //     serviceDN: "cn=oidc,ou=configurations,dc=local,dc=dev",
-    //     baseDN: "dc=local,dc=dev",
-    //     servicePassword: "oidc"
+    //     bind: "cn=oidc,ou=configurations,dc=local,dc=dev",
+    //     base: "dc=local,dc=dev",
+    //     password: "oidc"
     // }
+    redis: {
+        url: "redis://192.168.56.106/1"
+    }
 };
 
 /**
@@ -84,8 +87,7 @@ module.exports.directoryOrganisation = {
 module.exports.urls = {
     issuer: "http://192.168.56.103/oidc",
     interaction: "http://192.168.56.103/oidc/interaction/",
-    homepage: "https://192.168.56.103",
-    redis: "redis://192.168.56.102/1"
+    homepage: "https://192.168.56.103"
 };
 
 /**
@@ -95,7 +97,37 @@ module.exports.urls = {
  */
 module.exports.config = {
     // acrValues: ["session", "urn:mace:switch.ch:SWITCHaai:eduid.ch"],
+    port: 3000,
     claimsExtra: {
         eduid: ["affiliation"]
+    }
+};
+
+/**
+ *
+ * source: folder | file | ldap | redis
+ *
+ * file & folder options:
+ * *   path: file system path to the keystore. For file sources path MUST point
+ *     to a file; for folder sources path MUST point to a directory.
+ *
+ * ldap options: (NOT IMPLEMENTED YET)
+ * *   url: source directory, if missing the common connection is used
+ * *   base: the base DN for obtaining the certificates.
+ * *   class: the object class for the certificates
+ *
+ * redis options: (NOT IMPLEMENTED YET)
+ * *   url: redis database for the certificates, if missing redis directory is
+ *     used.
+ * *   key: the certificates key that is used.
+ */
+module.exports.certificates = {
+    external: {
+        source: "folder",
+        path: "configuration/keys"
+    },
+    internal: {
+        source: "file",
+        path: "configuration/integrity.jwks"
     }
 };
