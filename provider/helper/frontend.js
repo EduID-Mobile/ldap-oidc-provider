@@ -1,5 +1,11 @@
 "use strict";
 
+/**
+ * This file contains the interaction handling definition.
+ *
+ * the frontend function sets up the koa routes for the interactive components.
+ */
+
 const path = require("path");
 
 const bodyParser = require("koa-body");

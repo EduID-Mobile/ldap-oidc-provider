@@ -105,12 +105,12 @@ class Configurator {
         if (cfg.source === "folder") {
             return kl
                 .loadKeyDir(cfg.path)
-                .then(() => kl.ks.toJSON(true));
+                .then(() => kl.keys);
         }
         else if (cfg.source === "file") {
             return kl
                 .loadKey(cfg.path)
-                .then(() => kl.ks.toJSON(true));
+                .then(() => kl.keys);
         }
     }
 
