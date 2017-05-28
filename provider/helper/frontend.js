@@ -14,6 +14,8 @@ const Router = require("koa-router");
 const render = require("koa-ejs");
 
 module.exports = function frontend(provider, settings) {
+    settings.log("setup front end");
+
     render(provider.app, {
         cache: false,
         layout: "_layout",
@@ -25,13 +27,16 @@ module.exports = function frontend(provider, settings) {
 
     provider.app.proxy = true;
 
-    // const router = new Router();
     const router = new Router();
     // const router = Router;
+
+    settings.log("add get interaction grant route");
 
     router.get("/interaction/:grant", function* renderInteraction(next) {
         const cookie = provider.interactionDetails(this.req);
         const client = yield provider.Client.find(cookie.params.client_id);
+
+        settings.log("call get interaction grant route");
 
         if (cookie.interaction.error === "login_required") {
             yield this.render("login", {
@@ -69,9 +74,13 @@ module.exports = function frontend(provider, settings) {
     // const body = bodyParser();
     // const body = bodyParser;
 
+    settings.log("add post interaction grant confirm route");
     router.post("/interaction/:grant/confirm", body, function *handleConfirmation(next) {
         const cookie = provider.interactionDetails(this.req);
         const adapter = settings.config.adapter("Interaction");
+
+
+        settings.log("call post interaction grant confirm route");
 
         let result = yield adapter.find(cookie.uuid);
 
@@ -94,12 +103,15 @@ module.exports = function frontend(provider, settings) {
         yield next;
     });
 
+    settings.log("add post interaction grant login route");
     router.post("/interaction/:grant/login", body, function *handleLogin(next) {
         const account = yield settings.accountByLogin(this.request.body.login,
                                                       this.request.body.password);
 
         const cookie = provider.interactionDetails(this.req);
         const client = yield provider.Client.find(cookie.params.client_id);
+
+        settings.log("call post interaction grant login route");
 
         if (!account.accountId) {
             // login failed
@@ -174,4 +186,6 @@ module.exports = function frontend(provider, settings) {
     });
 
     provider.app.use(router.routes());
+    settings.log("front end ready");
+    return Promise.resolve();
 };

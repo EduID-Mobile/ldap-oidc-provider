@@ -40,6 +40,7 @@ class LdapClientAdapter {
    *
    */
     constructor(name, cfg) {
+        this.log = cfg.log;
         this.name = name;
         this.org  = cfg.directoryOrganisation[name];
         this.ldap = findConnection(this.org.source, cfg);
@@ -84,7 +85,11 @@ class LdapClientAdapter {
         return this.ldap
             .find(["&", `objectClass=${this.org.class}`, `${this.org.id}=${id}`], baseDN)
             .then(res => this.verifyResultSet(res))
-            .then(obj => this.transposeAttributes(obj));
+            .then(obj => this.transposeAttributes(obj))
+            .catch(err => {
+                this.log(`${id} not found ${err.message}`);
+                return Promise.reject(err);
+            });
     }
 
     upsert(id, payload, expiresIn) { // eslint-disable-line no-unused-vars

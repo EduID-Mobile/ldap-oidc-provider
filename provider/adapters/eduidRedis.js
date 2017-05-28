@@ -20,6 +20,11 @@ function grantKeyFor(id) {
 
 class RedisAdapter {
     constructor(name, cfg) {
+        this.expose = () => {};
+        if (cfg.log) {
+            this.expose = cfg.log;
+        }
+
         this.name = name;
         const connName = cfg.redis[name] ? "name" : "common";
 
@@ -28,6 +33,8 @@ class RedisAdapter {
                 keyPrefix: `${cfg.redis[connName].prefix}:`
             });
         }
+
+        this.client = client[connName];
     }
 
     key(id) {
@@ -35,31 +42,51 @@ class RedisAdapter {
     }
 
     destroy(id) {
+        this.expose(`redis destroy ${id}`);
+
         const key = this.key(id);
 
-        return client.hget(key, "grantId")
-            .then(grantId => client.lrange(grantKeyFor(grantId), 0, -1))
-            .then(tokens => Promise.all(_.map(tokens, token => client.del(token))))
-            .then(() => client.del(key));
+        return this.client.hget(key, "grantId")
+            .then(grantId => this.client.lrange(grantKeyFor(grantId), 0, -1))
+            .then(tokens => Promise.all(_.map(tokens, token => this.client.del(token))))
+            .then(() => this.client.del(key));
     }
 
     consume(id) {
-        return client.hset(this.key(id), "consumed", Math.floor(Date.now() / 1000));
+        this.expose(`redis consume ${id}`);
+
+        return this.client.hset(this.key(id), "consumed", Math.floor(Date.now() / 1000));
     }
 
     find(id) {
-        return client.hgetall(this.key(id)).then((data) => {
-            if (_.isEmpty(data)) {
-                return undefined;
-            }
-            else if (data.dump !== undefined) {
-                return JSON.parse(data.dump);
-            }
-            return data;
-        });
+        this.expose(`redis find ${id}`);
+
+        return this.client.hgetall(this.key(id))
+            .then((data) => {
+                if (_.isEmpty(data)) {
+                    this.expose("redis find: not found");
+
+                    return {destroyed: true};
+                }
+                else if (data.dump !== undefined) {
+                    this.expose("redis find: json data");
+
+                    return JSON.parse(data.dump);
+                }
+                this.expose(`redis find: return ${id}`);
+
+                return data;
+            })
+            .catch(err => {
+                this.expose("redis find failed " + err);
+
+                return Promise.reject(err);
+            });
     }
 
     upsert(id, payload, expiresIn) {
+        this.expose(`redis upsert ${id}`);
+
         const key = this.key(id);
         let toStore = payload;
 
@@ -70,7 +97,7 @@ class RedisAdapter {
             toStore = { dump: JSON.stringify(payload) };
         }
 
-        const multi = client.multi();
+        const multi = this.client.multi();
 
         multi.hmset(key, toStore);
 
