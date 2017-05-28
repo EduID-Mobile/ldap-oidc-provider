@@ -19,7 +19,7 @@ module.exports = function frontend(provider, settings) {
     render(provider.app, {
         cache: false,
         layout: "_layout",
-        root: path.join(__dirname, "views"),
+        root: path.join(path.dirname(__dirname), "views"),
     });
 
     // more extra keys? where are they used?
@@ -33,12 +33,14 @@ module.exports = function frontend(provider, settings) {
     settings.log("add get interaction grant route");
 
     router.get("/interaction/:grant", function* renderInteraction(next) {
+        settings.log("call get interaction grant route");
         const cookie = provider.interactionDetails(this.req);
         const client = yield provider.Client.find(cookie.params.client_id);
 
-        settings.log("call get interaction grant route");
+        settings.log("client found");
 
         if (cookie.interaction.error === "login_required") {
+            settings.log("core interaction grant: login required");
             yield this.render("login", {
                 client,
                 cookie,
@@ -53,6 +55,7 @@ module.exports = function frontend(provider, settings) {
             });
         }
         else {
+            settings.log("core interaction grant: confirmation required");
             yield this.render("interaction", {
                 client,
                 cookie,
@@ -79,10 +82,11 @@ module.exports = function frontend(provider, settings) {
         const cookie = provider.interactionDetails(this.req);
         const adapter = settings.config.adapter("Interaction");
 
-
         settings.log("call post interaction grant confirm route");
 
         let result = yield adapter.find(cookie.uuid);
+
+        settings.log("found authorization session");
 
         // there is no previous interaction result that we need to expand
         if (!result) {
@@ -100,10 +104,12 @@ module.exports = function frontend(provider, settings) {
         adapter.destroy(cookie.uuid);
 
         provider.interactionFinished(this.req, this.res, result);
+        settings.log("interaction completed, continue");
         yield next;
     });
 
     settings.log("add post interaction grant login route");
+
     router.post("/interaction/:grant/login", body, function *handleLogin(next) {
         const account = yield settings.accountByLogin(this.request.body.login,
                                                       this.request.body.password);
@@ -115,6 +121,7 @@ module.exports = function frontend(provider, settings) {
 
         if (!account.accountId) {
             // login failed
+            settings.log("login failed, render login view");
             yield this.render("login", {
                 client,
                 cookie,
@@ -131,6 +138,7 @@ module.exports = function frontend(provider, settings) {
         else {
             // login succeeded
             // store the account info
+            settings.log("login succeeded");
             const result = {
                 login: {
                     account: account.accountId,
@@ -150,7 +158,7 @@ module.exports = function frontend(provider, settings) {
             // TODO check whether the user already consented using the service
             // only if NO consent or an explicity reset request has been made,
             // we show the consent interaction
-
+            settings.log("render confirmation view");
             yield this.render("interaction", {
                 client,
                 cookie,
@@ -164,6 +172,7 @@ module.exports = function frontend(provider, settings) {
                 baseuri: settings.urls.interaction,
             });
 
+            settings.log("interaction completed, continue");
             yield next;
 
             // we should consider the defaultACR it is set for the client
