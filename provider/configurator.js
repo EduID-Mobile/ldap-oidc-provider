@@ -49,9 +49,6 @@ if (cfg.urls.homepage) {
 
 class Configurator {
     constructor() {
-        this.accountInfo  = cfg.directoryOrganisation.Account;
-        this.issuerUrl    = cfg.urls.issuer;
-
         settings.findById = id => this.accountById(id);
 
         // find out where and how these keys are used
@@ -60,6 +57,8 @@ class Configurator {
         // create certificate stubs
         this.certificates = {keys: []};
         this.integrityKeys = {keys: []};
+
+        // add logging core
         this.log = cfg.log;
     }
 
@@ -131,6 +130,14 @@ class Configurator {
             keystore: this.certificates,
             integrity: this.integrityKeys,
         };
+    }
+
+    get issuerUrl() {
+        return cfg.urls.issuer;
+    }
+
+    get accountInfo() {
+        return cfg.directoryOrganisation.Account;
     }
 }
 

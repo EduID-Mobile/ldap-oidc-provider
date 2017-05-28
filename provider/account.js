@@ -16,10 +16,9 @@ class Account {
         this.user = userdata;
 
         if (this.user) {
-            this.accountId = this.user.uid;
+            this.accountId = this.user.uid; // bad, should use config!
         }
     }
-
     /**
      * Returns the OIDC claims for the id-token.
      *

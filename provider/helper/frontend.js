@@ -30,8 +30,6 @@ module.exports = function frontend(provider, settings) {
     const router = new Router();
     // const router = Router;
 
-    settings.log("add get interaction grant route");
-
     router.get("/interaction/:grant", function* renderInteraction(next) {
         settings.log("call get interaction grant route");
         const cookie = provider.interactionDetails(this.req);
@@ -77,7 +75,6 @@ module.exports = function frontend(provider, settings) {
     // const body = bodyParser();
     // const body = bodyParser;
 
-    settings.log("add post interaction grant confirm route");
     router.post("/interaction/:grant/confirm", body, function *handleConfirmation(next) {
         const cookie = provider.interactionDetails(this.req);
         const adapter = settings.config.adapter("Interaction");
@@ -108,16 +105,13 @@ module.exports = function frontend(provider, settings) {
         yield next;
     });
 
-    settings.log("add post interaction grant login route");
-
     router.post("/interaction/:grant/login", body, function *handleLogin(next) {
-        const account = yield settings.accountByLogin(this.request.body.login,
-                                                      this.request.body.password);
-
+        settings.log("call post interaction grant login route");
         const cookie = provider.interactionDetails(this.req);
         const client = yield provider.Client.find(cookie.params.client_id);
 
-        settings.log("call post interaction grant login route");
+        const account = yield settings.accountByLogin(this.request.body.login,
+                                                      this.request.body.password);
 
         if (!account.accountId) {
             // login failed

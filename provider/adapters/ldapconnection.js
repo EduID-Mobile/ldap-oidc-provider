@@ -276,7 +276,7 @@ class LDAPAdapter {
             .then(r => r.length ? r[0] : null)
             .then(e => {
                 if (e) {
-                    opt.baseDN = e.dn;
+                    opt.base = e.dn;
                     return this.connect(e.dn, password);
                 }
                 return null;

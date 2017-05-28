@@ -45,7 +45,6 @@ class LdapClientAdapter {
         this.org  = cfg.directoryOrganisation[name];
         this.ldap = findConnection(this.org.source, cfg);
         this.mapping = getMapping(name);
-
     }
 
     verifyResultSet(result) {
