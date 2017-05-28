@@ -12,11 +12,13 @@ const mapClaims = require("./mapping/map_claims.js");
  */
 
 class Account {
-    constructor(userdata) {
+    constructor(userdata, settings) {
         this.user = userdata;
 
         if (this.user) {
-            this.accountId = this.user.uid; // bad, should use config!
+            let idfield = settings.directoryOrganisation["Account"].id || "uid";
+
+            this.accountId = this.user[idfield];
         }
     }
     /**

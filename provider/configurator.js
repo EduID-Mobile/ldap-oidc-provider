@@ -71,7 +71,7 @@ class Configurator {
         return ldap
             .find(accountFilter)
             .then(r => r.length ? r[0] : null)
-            .then(e => new Account(e));
+            .then(e => new Account(e, cfg));
     }
 
     accountByLogin(login, pwd) {
@@ -84,7 +84,7 @@ class Configurator {
             .findAndBind(accountFilter, pwd)
             .then(c => c ? c.findBase() : null)
             .then(res => res && res.length ? res[0] : null)
-            .then(e => new Account(e));
+            .then(e => new Account(e, cfg));
     }
 
     getAcr() {
