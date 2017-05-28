@@ -14,7 +14,10 @@ settings
     .loadKeyStores()
     .then((keyStores) => provider.initialize(keyStores))
     .then(() => setupFrontEnd(provider, settings))
-    .then(() => provider.app.listen(settings.config.port))
+    .then(() => {
+        settings.log("init provider with " + settings.config.port);
+        provider.app.listen(settings.config.port);
+    })
     .catch((err) => {
         console.error(err); // eslint-disable-line no-console
         process.exit(1);

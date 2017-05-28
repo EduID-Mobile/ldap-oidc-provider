@@ -10,6 +10,7 @@ const Account = require("./account.js");
 const findConnection = require("./adapters/ldapmanager.js");
 const AdapterFactory = require("./adapters/factory.js");
 const KeyLoader = require("./helper/keyloader.js");
+const LoggingFactory = require("./helper/logging.js");
 
 // the defaults are the unaltered settings as provided by oidc-provider.
 const def = require("./settings.js");
@@ -29,9 +30,9 @@ Object.keys(def.config)
         }
     });
 
-// enforce integrity signatures on cookies
-_.set(settings, "cookies.short.secure", true);
-_.set(settings, "cookies.long.secure", true);
+// enforce cookies over HTTPS, however, Koa-Cookie is broken for proxies
+// _.set(settings, "cookies.short.secure", true);
+// _.set(settings, "cookies.long.secure", true);
 
 var confirmUrl = cfg.urls.interaction;
 
@@ -39,6 +40,7 @@ settings.interactionUrl = function (ia) { // eslint-disable-line no-unused-vars
     return `${confirmUrl}${this.oidc.uuid}`;
 };
 
+cfg.log = LoggingFactory(cfg);
 settings.adapter = AdapterFactory(cfg);
 
 if (cfg.urls.homepage) {
@@ -58,6 +60,7 @@ class Configurator {
         // create certificate stubs
         this.certificates = {keys: []};
         this.integrityKeys = {keys: []};
+        this.log = cfg.log;
     }
 
     accountById(userid) {

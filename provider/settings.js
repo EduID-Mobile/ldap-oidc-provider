@@ -4,6 +4,8 @@
 
 const pkg = require("../package.json");
 
+// based on default values found in oidc-provider lib/helpers/defaults.js
+
 module.exports.config = {
   // session management
     acrValues: ["session", "urn:mace:switch.ch:SWITCHaai:eduid.ch"],
@@ -28,20 +30,27 @@ module.exports.config = {
     },
   // oidc-provider features
     features: {
-        devInteractions: false,
+        devInteractions: false, // in production this should be false
         claimsParameter: true,
         clientCredentials: true,
         encryption: true,
         introspection: true,
-        registration: true,
+        registration: false,
         registrationManagement: false,
         request: true,
         requestUri: true,
         revocation: true,
         sessionManagement: true,
         backchannelLogout: true,
+        discovery: true,
+        alwaysIssueRefresh: false,
+        oauthNativeApps: false, // AppAuth Support
+        pkce: true,             // PIXI Support
     },
   // ???
     subjectTypes: ["public", "pairwise"],
-    pairwiseSalt: "da1c442b365b563dfc121f285a11eedee5bbff7110d55c88"
+    pairwiseSalt: "da1c442b365b563dfc121f285a11eedee5bbff7110d55c88",
+    prompts: ["consent", "login", "none"],
+    scopes: ["address", "email", "offline_access", "openid", "phone", "profile"],
+    port: 3000
 };

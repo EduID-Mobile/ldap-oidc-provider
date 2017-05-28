@@ -136,3 +136,5 @@ module.exports.certificates = {
         path: "configuration/integrity.jwks"
     }
 };
+
+module.exports.logging = true;
