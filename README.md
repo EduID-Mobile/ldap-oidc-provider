@@ -14,7 +14,7 @@ This version has been tested on both, LTS and the Current version of Node.
 3.  Download eduid-oidc to the local machine and unpack it.
 4.  Run ```cd ldap-oidc-provider; npm install```
 5.  change the file ```configuration/settings.js``` to match your environment
-6.  copy your local keys in to the key directories.
+6.  copy your local keys into the key directories.
 8.  Create a Web-server Proxy, so nodejs is not directly exposed and restart the
     web-server.
 9.  Run ```npm start```
