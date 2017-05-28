@@ -136,3 +136,11 @@ module.exports.certificates = {
         path: "configuration/integrity.jwks"
     }
 };
+
+
+/**
+ * activate logging.
+ *
+ * In production environments this should remain inactive.
+ */
+module.exports.logging = false;
