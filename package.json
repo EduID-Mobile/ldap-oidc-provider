@@ -25,10 +25,10 @@
     "node": ">=6"
   },
   "dependencies": {
-    "oidc-provider": "^1.9.0",
+    "oidc-provider": "^2.0.0-pre.3",
     "ldapjs": "^1.0.0",
-    "koa-body": "^1.6.0",
-    "koa-ejs": "^1.0.0",
+    "koa-body": "^2.0.0",
+    "koa-ejs": "^4.0.0",
     "ioredis": "^2.5.0",
     "forever": "^0.15.0"
   },

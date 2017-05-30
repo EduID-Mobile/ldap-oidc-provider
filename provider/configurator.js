@@ -1,6 +1,6 @@
 "use strict";
 
-const _ = require("lodash");
+// const _ = require("lodash");
 
 const Account = require("./account.js");
 
@@ -41,7 +41,6 @@ settings.interactionUrl = function (ia) { // eslint-disable-line no-unused-vars
 };
 
 cfg.log = LoggingFactory(cfg);
-settings.adapter = AdapterFactory(cfg);
 
 if (cfg.urls.homepage) {
     settings.discovery.service_documentation = cfg.urls.homepage;
@@ -126,6 +125,7 @@ class Configurator {
 
     get keyStores() {
         return {
+            adapter: AdapterFactory(cfg),
             clients: [],
             keystore: this.certificates,
             integrity: this.integrityKeys,

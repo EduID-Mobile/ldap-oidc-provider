@@ -80,18 +80,6 @@ class LDAPAdapter {
         if (connection) {
             this.rootConnection = connection;
         }
-        else {
-            this.waitReady = [];
-            this.connect()
-                .then(c => this.resolveWaitingCue(c))
-                .catch(() => delete this.waitReady);
-        }
-    }
-
-    resolveWaitingCue(connection) {
-        this.rootConnection = connection;
-        this.waitReady.map(p => p(connection));
-        delete this.waitReady; // forget waitReady!
     }
 
     connect(userdn = null, passwd = null) {
@@ -176,30 +164,18 @@ class LDAPAdapter {
         if (!filterArray) {
             throw LdapErrors.queryFilter;
         }
+        
         if (!baseDN) {
             baseDN = this.opts.base;
         }
 
-        if (!this.rootConnection) {
-            return new Promise((resolve, reject) => {
-                this.waitReady.push((c) => {
-                    if (c) {
-                        resolve(this._find(filterArray, baseDN, scope));
-                    }
-                    else {
-                        reject("no connection");
-                    }
-                });
-            });
+        let filter = `${this.buildFilter(filterArray)}`;
+
+        if (!(filter && filter.length)) {
+            filter = "objectClass=*";
         }
 
         return new Promise((resolve, reject) => {
-            let filter = `${this.buildFilter(filterArray)}`;
-
-            if (!(filter && filter.length)) {
-                filter = "objectClass=*";
-            }
-
             this.rootConnection.search(baseDN,
                                        {
                                            filter: `(${filter})`,
@@ -219,9 +195,10 @@ class LDAPAdapter {
         });
     }
 
-    find(filterArray, baseDN = null, scope = "sub") {
-        return this._find(filterArray, baseDN, scope)
-            .then(res => res.map(o => this.splitUrls(o)));
+    async find(filterArray, baseDN = null, scope = "sub") {
+        const result = await this._find(filterArray, baseDN, scope)
+
+        return result.map(record => this.splitUrls(record))
             // .then((res) => { console.log(res); return res; });
     }
 
@@ -269,19 +246,18 @@ class LDAPAdapter {
     // find and bind functions return a promise that returns a new LDAP
     // connector
 
-    findAndBind(filter, password) {
+    async findAndBind(filter, password) {
         let opt = {};
 
-        return this.find(filter, this.opts.base)
-            .then(r => r.length ? r[0] : null)
-            .then(e => {
-                if (e) {
-                    opt.base = e.dn;
-                    return this.connect(e.dn, password);
-                }
-                return null;
-            })
-            .then((c) => this.cloneWithConnection(c, opt));
+        const resultset = await this.find(filter, this.opts.base);
+
+        if (resultset.length && resultset[0]) {
+            const entry = resultset[0];
+            const userConnection = await this.connect(entry.dn, password);
+
+            return this.cloneWithConnection(userConnection, {base: entry.dn});
+        }
+        return null;
     }
 
     cloneWithConnection(connection, opts = null) {

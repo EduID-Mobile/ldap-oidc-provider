@@ -47,16 +47,6 @@ class LdapClientAdapter {
         this.mapping = getMapping(name);
     }
 
-    verifyResultSet(result) {
-          // intuitively, we would let the promise fail.
-          // OIDC-provider requires a resolved Promise to handle the not found
-          // promise internally.
-          // a rejected Promise will lead that the action handler will run
-          // into the generic error handling and yield a 500 error.
-
-        return result && result.length ? result[0] : null;
-    }
-
     transposeAttributes(result) {
         return mapClaims(this.mapping, result, forceArray);
     }
@@ -69,11 +59,9 @@ class LdapClientAdapter {
    * @param {string} id Identifier of oidc-provider model
    *
    */
-    find(id) {
-        // let cid = "cn";
-
+    async find(id) {
         if (!(this.org.id && this.org.id.length)) {
-            return Promise.resolve(null);
+            return null;
         }
         let baseDN = null;
 
@@ -81,14 +69,16 @@ class LdapClientAdapter {
             baseDN = this.org.base;
         }
 
-        return this.ldap
-            .find(["&", `objectClass=${this.org.class}`, `${this.org.id}=${id}`], baseDN)
-            .then(res => this.verifyResultSet(res))
-            .then(obj => this.transposeAttributes(obj))
-            .catch(err => {
-                this.log(`${id} not found ${err.message}`);
-                return Promise.reject(err);
-            });
+        const result = await this.ldap.find(["&", `objectClass=${this.org.class}`, `${this.org.id}=${id}`], baseDN);
+
+        if (!(result && result.length)) {
+            return null;
+        }
+        let result = this.transposeAttributes(result[0]));
+
+        // loop through related information.
+
+        return result;
     }
 
     upsert(id, payload, expiresIn) { // eslint-disable-line no-unused-vars

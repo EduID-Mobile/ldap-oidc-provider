@@ -41,15 +41,15 @@ class RedisAdapter {
         return `${this.name}:${id}`;
     }
 
-    destroy(id) {
+    await destroy(id) {
         this.expose(`redis destroy ${id}`);
 
         const key = this.key(id);
 
-        return this.client.hget(key, "grantId")
-            .then(grantId => this.client.lrange(grantKeyFor(grantId), 0, -1))
-            .then(tokens => Promise.all(_.map(tokens, token => this.client.del(token))))
-            .then(() => this.client.del(key));
+        const grantId = await this.client.hget(key, "grantId");
+        const tokens = await this.client.lrange(grantKeyFor(grantId), 0, -1);
+        await Promise.all(_.map(tokens, token => this.client.del(token)));
+        this.client.del(key);
     }
 
     consume(id) {
@@ -58,30 +58,24 @@ class RedisAdapter {
         return this.client.hset(this.key(id), "consumed", Math.floor(Date.now() / 1000));
     }
 
-    find(id) {
+    async find(id) {
         this.expose(`redis find ${id}`);
 
-        return this.client.hgetall(this.key(id))
-            .then((data) => {
-                if (_.isEmpty(data)) {
-                    this.expose("redis find: not found");
+        let data = await this.client.hgetall(this.key(id));
 
-                    return {destroyed: true};
-                }
-                else if (data.dump !== undefined) {
-                    this.expose("redis find: json data");
+        if (_.isEmpty(data)) {
+            this.expose("redis find: not found");
 
-                    return JSON.parse(data.dump);
-                }
-                this.expose(`redis find: return ${id}`);
+            data = {destroyed: true};
+        }
+        else if (data.dump !== undefined) {
+            this.expose("redis find: json data");
 
-                return data;
-            })
-            .catch(err => {
-                this.expose("redis find failed " + err);
+            return JSON.parse(data.dump);
+        }
+        this.expose(`redis find: return ${id}`);
 
-                return Promise.reject(err);
-            });
+        return data;
     }
 
     upsert(id, payload, expiresIn) {
