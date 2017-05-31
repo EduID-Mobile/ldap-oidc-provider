@@ -118,22 +118,27 @@ class LDAPAdapter {
     // This little method allows to write LDAP Style filters in JSON notation.
     // ["&", "foo=bar", "!foo=bar", ["|", "bar=foo", "mail=bar@foo.com"]];
     buildFilter(filterObj) {
-        let op = filterObj.shift();
+        if (!(filterObj instanceof Array)) {
+            filterObj = [filterObj];
+        }
+
+        const op = filterObj.shift();
 
         // and/or handling
         if (op === "&" || op === "|") {
-            let qs = filterObj.map((e) => {
-                if (e instanceof Array) {
-                    e = this.buildFilter(e);
-                }
-                if (e.length) {
-                    return `(${e})`;
+            const qs = filterObj.map((e) => {
+                if (e && e.length) {
+                    return this.buildFilter(e);
                 }
                 return "";
-            });
+            }).filter((e) => e.length);
 
-            if (qs.length) {
-                return op + qs.join("");
+            if (qs.length > 1) {
+                return `(${op}${qs.join("")})`;
+            }
+
+            if (qs.length === 1) {
+                return qs[0];
             }
             return ""; // operator without filters
         }
@@ -141,30 +146,28 @@ class LDAPAdapter {
         // not operator
         if (op === "!") {
              // not has only one filter
-            let e = filterObj.shift();
+            const e = filterObj.shift();
 
-            if (e instanceof Array) {
-                e = this.buildFilter(e);
-            }
-            if (e.length) {
-                return `${op}(${e})`;
+            if (e && e.length) {
+                return `(${op}${this.buildFilter(e)})`;
             }
             return ""; // operator without filter
         }
+
         if (op instanceof Array) {
             // always process arrays
             return this.buildFilter(op);
         }
 
         // pass literals
-        return op || "";
+        return op ? `(${op})` : "";
     }
 
     _find(filterArray, baseDN = null, scope = "sub") {
         if (!filterArray) {
             throw LdapErrors.queryFilter;
         }
-        
+
         if (!baseDN) {
             baseDN = this.opts.base;
         }
@@ -178,7 +181,7 @@ class LDAPAdapter {
         return new Promise((resolve, reject) => {
             this.rootConnection.search(baseDN,
                                        {
-                                           filter: `(${filter})`,
+                                           filter: `${filter}`,
                                            scope: scope
                                        },
                                        (err, res) => {
@@ -246,10 +249,10 @@ class LDAPAdapter {
     // find and bind functions return a promise that returns a new LDAP
     // connector
 
-    async findAndBind(filter, password) {
+    async findAndBind(filter, password, scope = null) {
         let opt = {};
 
-        const resultset = await this.find(filter, this.opts.base);
+        const resultset = await this.find(filter, this.opts.base, scope);
 
         if (resultset.length && resultset[0]) {
             const entry = resultset[0];
