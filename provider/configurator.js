@@ -74,7 +74,7 @@ class Configurator {
     }
 
     async accountByLogin(login, pwd) {
-        const ldap = await findConnection(this.accountInfo.source);
+        const ldap = findConnection(this.accountInfo.source);
 
         const accountField = this.accountInfo.bind || this.accountInfo.id;
         let accountFilter = ["&", [`objectClass=${this.accountInfo.class}`], [`${accountField}=${login}`]];

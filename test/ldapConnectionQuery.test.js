@@ -230,8 +230,9 @@ describe("LDAPConnectionQuery", function() {
         expect(result[1]).to.be.an("object");
     });
 
-    it("connect", async function() {
+    it("manual find and bind ", async function() {
         const c2 = new LDAPConnection(conf);
+
         const [entry] = await connection.find(["objectClass=inetOrgPerson"]);
 
         c2.opts.base = entry.dn;
@@ -239,6 +240,16 @@ describe("LDAPConnectionQuery", function() {
 
         expect(c3).is.not.undefined;
         const result = await c2.findBase();
+
+        expect(result).to.be.an("array");
+        expect(result).is.lengthOf(1);
+        expect(result[0]).to.be.an("object");
+        expect(result[0].uid).is.equal("1234567890");
+    });
+
+    it("unconnected find", async function() {
+        const c2 = new LDAPConnection(conf);
+        const result = await c2.find(["objectClass=inetOrgPerson"]);
 
         expect(result).to.be.an("array");
         expect(result).is.lengthOf(1);

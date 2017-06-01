@@ -98,6 +98,17 @@ class LDAPAdapter {
     }
 
     async connect(userdn = null, passwd = null) {
+        if (this.rootConnection && !userdn && !passwd) {
+            return this.rootConnection;
+        }
+
+        if (!this.rootConnection) {
+            if (this.connectAttempt) {
+                return null;
+            }
+            this.connectAttempt = true;
+        }
+
         if (!this.opts) {
             throw LdapErrors.options;
         }
@@ -134,8 +145,9 @@ class LDAPAdapter {
 
         if (!this.rootConnection) {
             this.rootConnection = connection;
+            delete this.connectAttempt;
             await Promise.all(this.wait.map((f) => f()));
-            this.wait = [];
+            delete this.wait;
         }
 
         return connection;
@@ -193,14 +205,17 @@ class LDAPAdapter {
         return op ? `(${op})` : "";
     }
 
-    _find(filterArray, baseDN = null, scope = "sub") {
+    async _find(filterArray, baseDN = null, scope = "sub") {
         if (!this.rootConnection) {
-            return new Promise((resolve) =>
+            const p = new Promise((resolve) =>
                 this.wait.push(
                     () => resolve(this._find(filterArray, baseDN, scope))
                 )
-            )
+            );
+            this.connect(); // we silently ignore the connection promise
+            return p;
         }
+
 
         if (!baseDN) {
             baseDN = this.opts.base;

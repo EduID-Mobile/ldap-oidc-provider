@@ -12,9 +12,9 @@
  * the adapter will do two requests on the same information.
  */
 
-const getMapping = require("../mapping");
+// const getMapping = require("../mapping");
 const mapClaims = require("../mapping/map_claims");
-const findConnection = require("./ldapmanager");
+// const findConnection = require("./ldapmanager");
 
 // these are oidc-provider specific and are not optional for the mapping
 const forceArray = [
@@ -39,16 +39,33 @@ class LdapClientAdapter {
    * "RegistrationAccessToken"
    *
    */
-    constructor(name, cfg) {
-        this.log = cfg.log;
+    constructor(name) {
         this.name = name;
-        this.org  = cfg.directoryOrganisation[name];
-        this.ldap = findConnection(this.org.source, cfg);
-        this.mapping = getMapping(name);
+        this.org = {};
+        // if (cfg) {
+        //     this.org  = cfg.directoryOrganisation[name];
+        // }
+        // this.ldap = findConnection(this.org.source, cfg);
+        // this.mapping = getMapping(name);
+    }
+
+    connection(connection) {
+        this.ldap = connection;
+    }
+
+    transform(mapping) {
+        this.mapping = mapping;
+    }
+
+    organization(org) {
+        this.org = org;
     }
 
     transposeAttributes(result, scope=null) {
-        if (scope) {
+        if (!this.mapping) {
+            return result;
+        }
+        if (scope && this.mapping[scope]) {
             return mapClaims(this.mapping[scope], result, forceArray);
         }
         return mapClaims(this.mapping, result, forceArray);
@@ -78,16 +95,18 @@ class LdapClientAdapter {
 
         const entries = await this.ldap.find(filter, baseDN, scope);
 
-        if (!(entries && entries.length)) {
+        if (!(entries && entries.length === 1)) {
             return null;
         }
         const result = this.transposeAttributes(entries[0]);
 
         // loop through related information.
+        if (!this.org.subclaims) {
+            return result;
+        }
         const subclaims = await Promise.all(this.org.subclaims.map((set) => this.loadClaimset(set, entry)));
 
         // merge the subclaims into the main result set
-
         return this.mergeClaims(result, subclaims);
     }
 
