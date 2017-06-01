@@ -12,15 +12,11 @@ const mapClaims = require("./mapping/map_claims.js");
  */
 
 class Account {
-    constructor(userdata, settings) {
-        this.user = userdata;
-
-        if (this.user) {
-            let idfield = settings.directoryOrganisation["Account"].id || "uid";
-
-            this.accountId = this.user[idfield];
-        }
+    constructor(userClaims, userid) {
+        this.userClaims = userClaims;
+        this.accountId = userid;
     }
+
     /**
      * Returns the OIDC claims for the id-token.
      *
@@ -29,10 +25,6 @@ class Account {
      * If this function returns null, no user is set.
      */
     claims() {
-        if (!this.userClaims) {
-            this.userClaims = mapClaims(Mapping, this.user);
-        }
-
         return this.userClaims;
     }
 }
