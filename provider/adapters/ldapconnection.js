@@ -132,11 +132,11 @@ class LDAPAdapter {
             });
         });
 
-        this.rootConnection = connection;
-
-        await Promise.all(this.wait.map((f) => f()));
-
-        this.wait = [];
+        if (!this.rootConnection) {
+            this.rootConnection = connection;
+            await Promise.all(this.wait.map((f) => f()));
+            this.wait = [];
+        }
 
         return connection;
     }
@@ -195,9 +195,9 @@ class LDAPAdapter {
 
     _find(filterArray, baseDN = null, scope = "sub") {
         if (!this.rootConnection) {
-            return new Promise((success) =>
+            return new Promise((resolve) =>
                 this.wait.push(
-                    () => success(this._find(filterArray, baseDN, scope))
+                    () => resolve(this._find(filterArray, baseDN, scope))
                 )
             )
         }
@@ -284,13 +284,13 @@ class LDAPAdapter {
         return null;
     }
 
-    async cloneWithConnection(connection, opts = null) {
+    cloneWithConnection(connection, opts = null) {
         let newOpts = {};
 
         if (connection) {
-            Object.keys(this.opts).map(o => { newOpts[o] = this.opts[o]; });
+            Object.keys(this.opts).map(o => newOpts[o] = this.opts[o]);
             if (opts) {
-                Object.keys(opts).map(o => { newOpts[o] = opts[o]; });
+                Object.keys(opts).map(o => newOpts[o] = opts[o]);
             }
 
             return new LDAPAdapter(newOpts, connection);

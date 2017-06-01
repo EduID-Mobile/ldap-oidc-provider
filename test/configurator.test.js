@@ -21,23 +21,17 @@ describe("Configurator", function() {
         expect(settings.keyStores.integrity.keys).to.be.empty;
     });
 
-    it("initialized key stores ", function (done) {
-        settings.loadKeyStores()
-            .then(() => {
-                expect(settings.keyStores).to.be.an("object");
-                expect(settings.keyStores).to.have.keys("clients", "keystore", "integrity");
+    it("initialized key stores ", async function () {
+        await settings.loadKeyStores()
+        expect(settings.keyStores).to.be.an("object");
+        expect(settings.keyStores).to.have.keys("clients", "keystore", "integrity");
 
-                expect(settings.keyStores.clients).to.be.an("array");
-                expect(settings.keyStores.clients).to.be.empty;
-                expect(settings.keyStores.keystore).to.be.an("object").that.has.keys("keys");
-                expect(settings.keyStores.integrity).to.be.an("object").that.has.keys("keys");
-                expect(settings.keyStores.keystore.keys).to.have.lengthOf(5);
-                expect(settings.keyStores.integrity.keys).to.have.lengthOf(1);
-                done();
-            })
-            .catch(err => done(err));
-
-
+        expect(settings.keyStores.clients).to.be.an("array");
+        expect(settings.keyStores.clients).to.be.empty;
+        expect(settings.keyStores.keystore).to.be.an("object").that.has.keys("keys");
+        expect(settings.keyStores.integrity).to.be.an("object").that.has.keys("keys");
+        expect(settings.keyStores.keystore.keys).to.have.lengthOf(5);
+        expect(settings.keyStores.integrity.keys).to.have.lengthOf(1);
     });
 
 });
