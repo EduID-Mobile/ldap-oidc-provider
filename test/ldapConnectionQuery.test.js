@@ -267,7 +267,7 @@ describe("LDAPConnectionQuery", function() {
         expect(result).to.be.an("array");
         expect(result).is.lengthOf(1);
         expect(result[0]).to.be.an("object");
-        expect(result[0]).to.have.keys("ou", "objectClass", "controls", "dn");
+        expect(result[0]).to.have.keys("ou", "objectClass", "controls", "dn", "labeledURI");
         expect(result[0].ou).is.equal("users");
     });
 

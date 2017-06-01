@@ -7,7 +7,7 @@ const Account = require("./account.js");
 // The configuration integrates the official default settings with the
 // local settings. This allows administrators for focus on the key aspects
 // and otherwise stick with the defaults.
-const findConnection = require("./adapters/ldapmanager.js");
+
 const AdapterFactory = require("./adapters/factory.js");
 const KeyLoader = require("./helper/keyloader.js");
 const LoggingFactory = require("./helper/logging.js");
@@ -17,6 +17,8 @@ const def = require("./settings.js");
 
 // the cfg contains the configuration for the eduid frontend of oidc-provider.
 const cfg   = require("../configuration/settings.js");
+
+const findConnection = require("./adapters/ldapmanager.js")(cfg);
 
 const settings = {};
 
@@ -60,7 +62,7 @@ class Configurator {
         this.adapter = AdapterFactory(cfg);
 
         // add logging core
-        this.log = cfg.log;
+        // this.log = cfg.log;
     }
 
     async accountById(userid) {

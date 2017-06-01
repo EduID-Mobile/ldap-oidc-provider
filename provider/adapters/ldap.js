@@ -14,7 +14,6 @@
 
 // const getMapping = require("../mapping");
 const mapClaims = require("../mapping/map_claims");
-// const findConnection = require("./ldapmanager");
 
 // these are oidc-provider specific and are not optional for the mapping
 const forceArray = [
@@ -42,11 +41,6 @@ class LdapClientAdapter {
     constructor(name) {
         this.name = name;
         this.org = {};
-        // if (cfg) {
-        //     this.org  = cfg.directoryOrganisation[name];
-        // }
-        // this.ldap = findConnection(this.org.source, cfg);
-        // this.mapping = getMapping(name);
     }
 
     connection(connection) {
@@ -104,7 +98,7 @@ class LdapClientAdapter {
         if (!this.org.subclaims) {
             return result;
         }
-        
+
         const subclaims = await Promise.all(this.org.subclaims.map(async (setdef) => await this.loadClaimset(setdef, entries[0])));
 
         // merge the subclaims into the main result set
