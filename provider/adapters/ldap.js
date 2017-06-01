@@ -104,28 +104,50 @@ class LdapClientAdapter {
         if (!this.org.subclaims) {
             return result;
         }
-        const subclaims = await Promise.all(this.org.subclaims.map((set) => this.loadClaimset(set, entry)));
+        
+        const subclaims = await Promise.all(this.org.subclaims.map(async (setdef) => await this.loadClaimset(setdef, entries[0])));
 
         // merge the subclaims into the main result set
-        return this.mergeClaims(result, subclaims);
+        // note, that the subclaims array needs to be flattened
+        return this.mergeClaims(result, subclaims.reduce((l, c) => l.concat(c), []));
     }
 
     mergeClaims(result, subClaims) {
-        return subClaims.reduce((acc, val) =>
-            Object.keys(val).map((k) => {
-                if (!Array.isArray(val[k])) {
-                    val[k] = [val[k]];
-                }
-                if (!acc[k]) {
-                    acc[k] = [];
-                }
-                if (acc[k] && !Array.isArray(acc[k])) {
-                    acc[k] = [acc[k]];
-                }
-                acc[k] = acc[k].concat(val[k]);
+        const final = subClaims.reduce((acc, val) => {
+            if (val === null) {
                 return acc;
-            }),
-            result);
+            }
+            Object.keys(val).map((k) => {
+                if (!acc[k]) {
+                    acc[k] = val[k];
+                }
+                else if (acc[k] &&
+                        !((acc[k] instanceof Array) || typeof(acc[k]) === "string") &&
+                        !((val[k] instanceof Array) || typeof(val[k]) === "string")) {
+
+                    Object.keys(val[k]).map((k2) => {
+                        if (!acc[k][k2]) {
+                            acc[k][k2] = val[k][k2];
+                        }
+                        else {
+                            if (!(acc[k][k2] instanceof Array)) {
+                                acc[k][k2] = [acc[k][k2]];
+                            }
+                            acc[k][k2] = acc[k][k2].concat(val[k][k2]);
+                        }
+                    });
+                }
+                else {
+                    if (!(acc[k] instanceof Array)) {
+                        acc[k] = [acc[k]];
+                    }
+                    acc[k] = acc[k].concat(val[k]);
+                }
+            });
+            return acc;
+        },
+        result);
+        return final;
     }
 
     async loadClaimset(set, entry) {
@@ -151,7 +173,7 @@ class LdapClientAdapter {
         const entries = await this.ldap.find(filter, basedn, scope);
 
         if (!(entries && entries.length)) {
-            return null;
+            return [];
         }
 
         return entries.map((subEntry) => this.transposeAttributes(subEntry, set.claim));

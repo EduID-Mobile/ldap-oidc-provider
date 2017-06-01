@@ -7,7 +7,7 @@ const { expect } = require("chai");
 const mapClaims = require("../provider/mapping/map_claims");
 
 describe("MapClaims", function() {
-    let mapping = {
+    const mapping = {
         "direct": "dm",
         "masked_direct": ["mdm"],
         "flat": ["f1", "flatTest"],
