@@ -13,21 +13,20 @@ const conf = {
 };
 
 describe("LDAPConnectionBuildFilter", function() {
+    const conn   = new LDAPConnection(conf);
+
     it("loads", function() {
         expect(LDAPConnection).to.be.a("function");
     });
 
     it("simple string filter", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = "foo=bar";
-
         const result = conn.buildFilter(filter);
 
         expect(result).to.be.equal(`(${filter})`);
     });
 
     it("simple array filter", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["foo=bar"];
 
         const result = conn.buildFilter(filter);
@@ -36,7 +35,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("simple not conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["!","foo=bar"];
 
         const result = conn.buildFilter(filter);
@@ -44,7 +42,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("too long not conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["!","foo=bar", "bar=baz"];
 
         const result = conn.buildFilter(filter);
@@ -52,7 +49,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("simple and conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["&","foo=bar","bar=baz"];
 
         const result = conn.buildFilter(filter);
@@ -60,7 +56,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("single and conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["&","foo=bar"];
 
         const result = conn.buildFilter(filter);
@@ -68,7 +63,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("long and conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["&","foo=bar","bar=baz","baz=bar"];
 
         const result = conn.buildFilter(filter);
@@ -76,7 +70,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("simple or conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["|","foo=bar","bar=baz"];
 
         const result = conn.buildFilter(filter);
@@ -84,7 +77,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("single or conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["|","foo=bar"];
 
         const result = conn.buildFilter(filter);
@@ -92,7 +84,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("and with right nested or conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["&","foo=bar",["|","foo=bar","bar=baz"]];
 
         const result = conn.buildFilter(filter);
@@ -100,7 +91,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("and with left nested or conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["&",["|","foo=bar","bar=baz"],"foo=bar",];
 
         const result = conn.buildFilter(filter);
@@ -108,7 +98,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("or with right nested and conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["|","foo=bar",["&","foo=bar","bar=baz"]];
 
         const result = conn.buildFilter(filter);
@@ -116,7 +105,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("or with left nested and conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["|",["&","foo=bar","bar=baz"],"foo=bar"];
 
         const result = conn.buildFilter(filter);
@@ -124,7 +112,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("or with left and right nested and conjunction", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["|",["&","foo=bar","bar=baz"],["&","foo=bar","baz=bar"]];
 
         const result = conn.buildFilter(filter);
@@ -132,7 +119,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("multi literal string", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["foo=bar","bar=baz"];
 
         const result = conn.buildFilter(filter);
@@ -140,7 +126,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("empty literal string", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = [""];
 
         const result = conn.buildFilter(filter);
@@ -148,7 +133,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("and conjunction with empty literal right", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["&","foo=bar",""];
 
         const result = conn.buildFilter(filter);
@@ -156,7 +140,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("and conjunction with empty literal left", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = ["&","","foo=bar"];
 
         const result = conn.buildFilter(filter);
@@ -164,7 +147,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("multi nested literal", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = [[[["foo=bar"]]]];
 
         const result = conn.buildFilter(filter);
@@ -172,7 +154,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("multi nested not", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = [["!", [[["foo=bar"]]]]];
 
         const result = conn.buildFilter(filter);
@@ -180,7 +161,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("multi nested and", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = [["&", [[["foo=bar"]]],[["bar=baz"]]]];
 
         const result = conn.buildFilter(filter);
@@ -190,7 +170,6 @@ describe("LDAPConnectionBuildFilter", function() {
     // the following two tests are within the logic requirements, but
     // are probably a bit counter intuitive.
     it("multi nested and with literal list", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = [["&", [[["foo=bar", "baz=bar"]]],[["bar=baz"]]]];
 
         const result = conn.buildFilter(filter);
@@ -198,7 +177,6 @@ describe("LDAPConnectionBuildFilter", function() {
     });
 
     it("multi nested and nested literals", function() {
-        const conn   = new LDAPConnection(conf);
         const filter = [["&", [[["foo=bar"], "baz=bar"]],[["bar=baz"]]]];
 
         const result = conn.buildFilter(filter);
