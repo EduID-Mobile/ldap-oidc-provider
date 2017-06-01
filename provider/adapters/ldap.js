@@ -47,17 +47,15 @@ class LdapClientAdapter {
         this.mapping = getMapping(name);
     }
 
-    transposeAttributes(result) {
+    transposeAttributes(result, scope=null) {
+        if (scope) {
+            return mapClaims(this.mapping[scope], result, forceArray);
+        }
         return mapClaims(this.mapping, result, forceArray);
     }
 
   /**
-   * Return previously stored instance of an oidc-client.
-   *
-   * @return {Promise} Promise fulfilled with either Object (when found and not dropped yet due to
-   * expiration) or falsy value when not found anymore. Rejected with error when encountered.
-   * @param {string} id Identifier of oidc-provider model
-   *
+   * Returns the attributes for an entry
    */
     async find(id) {
         if (!(this.org.id && this.org.id.length)) {
@@ -69,16 +67,75 @@ class LdapClientAdapter {
             baseDN = this.org.base;
         }
 
-        const result = await this.ldap.find(["&", `objectClass=${this.org.class}`, `${this.org.id}=${id}`], baseDN);
+        const scope = this.org.scope || "sub";
+        let filter = ["&", `objectClass=${this.org.class}`, `${this.org.id}=${id}`];
 
-        if (!(result && result.length)) {
+        if (this.org.filter &&
+            this.org.filter.length) {
+
+            filter = filter.concat(this.org.filter);
+        }
+
+        const entries = await this.ldap.find(filter, baseDN, scope);
+
+        if (!(entries && entries.length)) {
             return null;
         }
-        let result = this.transposeAttributes(result[0]));
+        const result = this.transposeAttributes(entries[0]);
 
         // loop through related information.
+        const subclaims = await Promise.all(this.org.subclaims.map((set) => this.loadClaimset(set, entry)));
 
-        return result;
+        // merge the subclaims into the main result set
+
+        return this.mergeClaims(result, subclaims);
+    }
+
+    mergeClaims(result, subClaims) {
+        return subClaims.reduce((acc, val) =>
+            Object.keys(val).map((k) => {
+                if (!Array.isArray(val[k])) {
+                    val[k] = [val[k]];
+                }
+                if (!acc[k]) {
+                    acc[k] = [];
+                }
+                if (acc[k] && !Array.isArray(acc[k])) {
+                    acc[k] = [acc[k]];
+                }
+                acc[k] = acc[k].concat(val[k]);
+                return acc;
+            }),
+            result);
+    }
+
+    async loadClaimset(set, entry) {
+        const basedn = set.base || entry.dn;
+        const idfield = set.id || this.org.id;
+        const scope = set.scope || this.org.scope || "sub";
+
+        let filter = [`${idfield}=${entry[this.org.id]}`];
+
+        if (set.class) {
+            filter.push(`objectClass=${set.class}`);
+        }
+
+        if (set.filter &&
+            set.filter.length) {
+            filter = filter.concat(set.filter);
+        }
+
+        if (filter.length > 1) {
+            filter.unshift("&");
+        }
+
+        const entries = await this.ldap.find(filter, basedn, scope);
+
+        if (!(entries && entries.length)) {
+            return null;
+        }
+
+        return entries.map((subEntry) => this.transposeAttributes(subEntry, set.claim));
     }
 
     upsert(id, payload, expiresIn) { // eslint-disable-line no-unused-vars

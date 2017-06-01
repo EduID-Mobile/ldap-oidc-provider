@@ -57,33 +57,46 @@ class Configurator {
         this.certificates = {keys: []};
         this.integrityKeys = {keys: []};
 
+        this.adapter = AdapterFactory(cfg);
+
         // add logging core
         this.log = cfg.log;
     }
 
-    accountById(userid) {
-        let ldap = findConnection(this.accountInfo.source);
+    async accountById(userid) {
+        const userAdapter = this.adapter("Account");
+        const userData = await userAdapter.find(userid);
 
-        let accountField = this.accountInfo.id || "uid";
-        let accountFilter = ["&", [`objectClass=${this.accountInfo.class}`], [`${accountField}=${userid}`]];
-
-        return ldap
-            .find(accountFilter)
-            .then(r => r.length ? r[0] : null)
-            .then(e => new Account(e, cfg));
+        if (userData) {
+            return new Account(userData, userid);
+        }
+        return null;
     }
 
-    accountByLogin(login, pwd) {
-        let ldap = findConnection(this.accountInfo.source);
+    async accountByLogin(login, pwd) {
+        const ldap = await findConnection(this.accountInfo.source);
 
-        let accountField = this.accountInfo.bind || "mail";
+        const accountField = this.accountInfo.bind || this.accountInfo.id;
         let accountFilter = ["&", [`objectClass=${this.accountInfo.class}`], [`${accountField}=${login}`]];
 
-        return ldap
-            .findAndBind(accountFilter, pwd)
-            .then(c => c ? c.findBase() : null)
-            .then(res => res && res.length ? res[0] : null)
-            .then(e => new Account(e, cfg));
+        if (this.accountInfo.filter) {
+            accountFilter = accountFilter.concat(this.accountInfo.filter);
+        }
+
+        const accountScope = this.accountInfo.scope || "sub";
+        const connection = await ldap.findAndBind(accountFilter, pwd, scope);
+
+        if (!connection) {
+            return null;
+        }
+
+        const uInfo = await connection.findBase();
+
+        if (!(uInfo && uInfo.length)) {
+            return null;
+        }
+
+        return this.accountById(uInfo[this.accountInfo.id]);
     }
 
     getAcr() {
@@ -125,7 +138,7 @@ class Configurator {
 
     get keyStores() {
         return {
-            adapter: AdapterFactory(cfg),
+            adapter: this.adapter,
             clients: [],
             keystore: this.certificates,
             integrity: this.integrityKeys,

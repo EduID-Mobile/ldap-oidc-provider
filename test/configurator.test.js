@@ -11,7 +11,7 @@ describe("Configurator", function() {
     });
     it("uninitialized key stores ", function () {
         expect(settings.keyStores).to.be.an("object");
-        expect(settings.keyStores).to.have.keys("clients", "keystore", "integrity");
+        expect(settings.keyStores).to.have.keys("clients", "keystore", "integrity", "adapter");
 
         expect(settings.keyStores.clients).to.be.an("array");
         expect(settings.keyStores.clients).to.be.empty;
@@ -24,7 +24,7 @@ describe("Configurator", function() {
     it("initialized key stores ", async function () {
         await settings.loadKeyStores()
         expect(settings.keyStores).to.be.an("object");
-        expect(settings.keyStores).to.have.keys("clients", "keystore", "integrity");
+        expect(settings.keyStores).to.have.keys("clients", "keystore", "integrity", "adapter");
 
         expect(settings.keyStores.clients).to.be.an("array");
         expect(settings.keyStores.clients).to.be.empty;

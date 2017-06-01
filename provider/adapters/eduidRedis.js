@@ -41,7 +41,7 @@ class RedisAdapter {
         return `${this.name}:${id}`;
     }
 
-    await destroy(id) {
+    async destroy(id) {
         this.expose(`redis destroy ${id}`);
 
         const key = this.key(id);
