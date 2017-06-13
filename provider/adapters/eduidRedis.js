@@ -21,16 +21,13 @@ function grantKeyFor(id) {
 class RedisAdapter {
     constructor(name, cfg) {
         this.expose = () => {};
-        if (cfg.log) {
-            this.expose = cfg.log;
-        }
 
         this.name = name;
-        const connName = cfg.redis[name] ? "name" : "common";
+        const connName = cfg.redis.connection[name] ? "name" : "common";
 
         if (!client[connName]) {
-            client[connName] = new Redis(cfg.redis[connName].url, {
-                keyPrefix: `${cfg.redis[connName].prefix}:`
+            client[connName] = new Redis(cfg.redis.connection[connName].url, {
+                keyPrefix: `${cfg.redis.connection[connName].prefix}:`
             });
         }
 

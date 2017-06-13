@@ -7,7 +7,7 @@ const getMapping = require("../mapping");
 const LdapManager = require("./ldapmanager");
 
 module.exports = function AdapterFactory(cfg) {
-    const ldapTypes = Object.keys(cfg.directoryOrganisation);
+    const ldapTypes = Object.keys(cfg.ldap.organization);
     const findConnection = LdapManager(cfg);
 
     return function getAdapter(name) {
@@ -20,9 +20,10 @@ module.exports = function AdapterFactory(cfg) {
             // new LDAP Adapter
             const adapter = new LdapAdapter(name);
 
-            const org = cfg.directoryOrganisation[name];
+            const org = cfg.ldap.organization[name];
+            const mapping = cfg.mapping[name] || getMapping(name);
 
-            adapter.mapping(getMapping(name));
+            adapter.transform(mapping);
             adapter.organization(org);
             adapter.connection(findConnection(org.source));
 

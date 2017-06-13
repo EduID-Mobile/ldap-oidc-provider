@@ -1,7 +1,8 @@
 "use strict";
 
 // const _ = require("lodash");
-
+const fs = require("./helper/asyncfs");
+const path = require("path");
 const Account = require("./account.js");
 
 // The configuration integrates the official default settings with the
@@ -15,54 +16,66 @@ const LoggingFactory = require("./helper/logging.js");
 // the defaults are the unaltered settings as provided by oidc-provider.
 const def = require("./settings.js");
 
-// the cfg contains the configuration for the eduid frontend of oidc-provider.
-const cfg   = require("../configuration/settings.js");
-
-const findConnection = require("./adapters/ldapmanager.js")(cfg);
-
-const settings = {};
-
-Object.keys(def.config)
-    .map(k => {
-        settings[k] = cfg.config[k] ? cfg.config[k] : def.config[k];
-        if (cfg.config[`${k}Extras`]) {
-            Object
-                .keys(cfg.config[`${k}Extras`])
-                .map(ek => settings[k][ek] = cfg.config[`${k}Extras`][ek]);
-        }
-    });
+const findConnection = require("./adapters/ldapmanager.js");
 
 // enforce cookies over HTTPS, however, Koa-Cookie is broken for proxies
 // _.set(settings, "cookies.short.secure", true);
 // _.set(settings, "cookies.long.secure", true);
 
-var confirmUrl = cfg.urls.interaction;
-
-settings.interactionUrl = function (ia) { // eslint-disable-line no-unused-vars
-    return `${confirmUrl}${this.oidc.uuid}`;
-};
-
-cfg.log = LoggingFactory(cfg);
-
-if (cfg.urls.homepage) {
-    settings.discovery.service_documentation = cfg.urls.homepage;
-}
+let instanceConfig;
 
 class Configurator {
     constructor() {
-        settings.findById = id => this.accountById(id);
-
         // find out where and how these keys are used
         this.keys = ["some secret key", "and also the old one"];
 
         // create certificate stubs
         this.certificates = {keys: []};
         this.integrityKeys = {keys: []};
+    }
 
-        this.adapter = AdapterFactory(cfg);
+    async loadConfiguration(cfgFile) {
+        const parentDir = path.dirname(__dirname);
 
-        // add logging core
-        // this.log = cfg.log;
+        if (!path.isAbsolute(cfgFile)) {
+            cfgFile = path.join(parentDir, "configuration", cfgFile);
+        }
+
+        const cfg = await fs.readFile(cfgFile);
+
+        return this.reduceConfiguration(JSON.parse(cfg.toString()));
+    }
+
+    reduceConfiguration(config) {
+        const settings = {};
+
+        Object.keys(def.config)
+            .map(k => {
+                settings[k] = config.config[k] ? config.config[k] : def.config[k];
+                if (config.config[`${k}Extras`]) {
+                    Object
+                        .keys(config.config[`${k}Extras`])
+                        .map(ek => settings[k][ek] = config.config[`${k}Extras`][ek]);
+                }
+            });
+
+        var confirmUrl = config.urls.interaction;
+
+        settings.interactionUrl = function (ia) { // eslint-disable-line no-unused-vars
+            return `${confirmUrl}${this.oidc.uuid}`;
+        };
+
+        config.log = LoggingFactory(config);
+
+        if (config.urls.homepage) {
+            settings.discovery.service_documentation = config.urls.homepage;
+        }
+
+        settings.findById = id => this.accountById(id);
+        this.adapter = AdapterFactory(config);
+
+        instanceConfig = config;
+        return this.settings = settings;
     }
 
     async accountById(userid) {
@@ -76,7 +89,7 @@ class Configurator {
     }
 
     async accountByLogin(login, pwd) {
-        const ldap = findConnection(this.accountInfo.source);
+        const ldap = findConnection(instanceConfig)(this.accountInfo.source);
 
         const accountField = this.accountInfo.bind || this.accountInfo.id;
         let accountFilter = ["&", [`objectClass=${this.accountInfo.class}`], [`${accountField}=${login}`]];
@@ -107,12 +120,50 @@ class Configurator {
         return retval >= 0 ? settings.acrValues[retval] : null;
     }
 
-    loadKeyStores() {
+    loadMappings() {
+        instanceConfig.mapping = {};
+
+        return Promise.all(Object.keys(instanceConfig.ldap.organization).map(
+            (k) => this.loadMappingFile(k)
+        ));
+    }
+
+    async loadMappingFile(name) {
+        if (!(name && name.length)) {
+            return null;
+        }
+
+        let mapFile = instanceConfig.ldap.organization[name];
+
+        if (!(mapFile && mapFile.length)) {
+            return null;
+        }
+
+        const parentDir = path.dirname(__dirname);
+
+        if (!path.isAbsolute(mapFile)) {
+            mapFile = path.join(parentDir, "configuration", mapFile);
+        }
+
+        name = name.toLowerCase();
+
+        // throw errors on non existing or corrupted files
+        const data = await fs.readFile(mapFile);
+
+        const result = JSON.parse(data.toString());
+
+        cfg.mapping[name] = result;
+        return result;
+    }
+
+    async loadKeyStores() {
         // return promise when keystores are loaded.
-        return Promise.all([
-            this.loadKeyStore(cfg.certificates.external).then(ks => this.certificates = ks),
-            this.loadKeyStore(cfg.certificates.internal).then(ks => this.integrityKeys = ks)
-        ]).then(() => this.keyStores);
+        await Promise.all([
+            this.loadKeyStore(instanceConfig.certificates.external).then(ks => this.certificates = ks),
+            this.loadKeyStore(instanceConfig.certificates.internal).then(ks => this.integrityKeys = ks)
+        ]);
+
+        return this.keyStores;
     }
 
     loadKeyStore(cfg) {
@@ -131,11 +182,15 @@ class Configurator {
     }
 
     get config() {
-        return settings;
+        return this.settings;
+    }
+
+    get customization() {
+        return instanceConfig;
     }
 
     get urls() {
-        return cfg.urls;
+        return instanceConfig.urls;
     }
 
     get keyStores() {
@@ -148,11 +203,11 @@ class Configurator {
     }
 
     get issuerUrl() {
-        return cfg.urls.issuer;
+        return instanceConfig.urls.issuer;
     }
 
     get accountInfo() {
-        return cfg.directoryOrganisation.Account;
+        return instanceConfig.ldap.organization.Account;
     }
 }
 

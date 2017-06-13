@@ -1,0 +1,64 @@
+{
+    "ldap": {
+        "connection": {
+            "common": {
+                "url": "ldap://192.168.56.102:389",
+                "bind": "cn=oidc,ou=configuration,dc=eduid,dc=ch",
+                "base": "dc=eduid,dc=ch",
+                "password": "oidc"
+            }
+        },
+        "organization": {
+            "Account": {
+                "class": "swissEduPerson",
+                "bind": "mail",
+                "id": "swissEduID",
+                "source": "common",
+                "base": "ou=accounts,dc=eduid,dc=ch",
+                "subclaims": {
+                    "class": "swissEduPerson",
+                    "base": "ou=current-accounts,dc=eduid,dc=ch",
+                    "scope": "one"
+                },
+                "mapping": "mapping/user"
+            },
+            "Client": {
+                "class": "oauthClientIdentity",
+                "id": "oauthClientID",
+                "source": "common",
+                "base": "ou=federation,dc=eduid,dc=ch",
+                "mapping": "mapping/client"
+            }
+        }
+    },
+    "redis": {
+        "connection": {
+            "common": {
+                "url": "redis://localhost/1",
+                "prefix": "oidc"
+            }
+        }
+    },
+    "urls": {
+        "issuer": "https://eduid.htwchur.ch/oidc",
+        "interaction": "https://eduid.htwchur.ch/oidc/interaction/",
+        "homepage": "https://eduid.htwchur.ch"
+    },
+    "config": {
+        "port": 3000,
+        "claimsExtra": {
+            "eduid": ["affiliation"]
+        }
+    },
+    "certificates": {
+        "external": {
+            "source": "folder",
+            "path": "configuration/keys"
+        },
+        "internal": {
+            "source": "file",
+            "path": "configuration/integrity.jwks"
+        }
+    },
+    "logging": false
+}

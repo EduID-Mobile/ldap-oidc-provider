@@ -9,6 +9,14 @@ describe("Configurator", function() {
     it("configurator object", function() {
         expect(settings).to.be.a("object");
     });
+
+    it("load configuration", async function() {
+        await settings.loadConfiguration("example.settings.json");
+        expect(settings.settings).to.be.an("object");
+        expect(settings.customization).to.be.an("object");
+        expect(settings.customization.ldap).to.be.an("object");
+    });
+
     it("uninitialized key stores ", function () {
         expect(settings.keyStores).to.be.an("object");
         expect(settings.keyStores).to.have.keys("clients", "keystore", "integrity", "adapter");
@@ -22,6 +30,7 @@ describe("Configurator", function() {
     });
 
     it("initialized key stores ", async function () {
+        await settings.loadConfiguration("example.settings.json");
         await settings.loadKeyStores()
         expect(settings.keyStores).to.be.an("object");
         expect(settings.keyStores).to.have.keys("clients", "keystore", "integrity", "adapter");

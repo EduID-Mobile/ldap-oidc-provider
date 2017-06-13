@@ -12,7 +12,7 @@ describe("LDAP Manager", function() {
     });
 
     it("get name", function() {
-        const cfg = {directory: {
+        const cfg = {ldap: { connection:{
             common: {
                 url: "ldap://192.168.56.102:389",
                 bind: "cn=oidc,ou=configurations,dc=local,dc=dev",
@@ -25,7 +25,7 @@ describe("LDAP Manager", function() {
                 base: "dc=local,dc=dev",
                 password: "oidc"
             }}
-        };
+        }};
 
         const find = Manager(cfg);
 
@@ -37,8 +37,7 @@ describe("LDAP Manager", function() {
     });
 
     it("get multi name", function() {
-        const cfg = {
-            directory: {
+        const cfg = {ldap: { connection:{
             common: {
                 url: "ldap://192.168.56.102:389",
                 bind: "cn=oidc,ou=configurations,dc=local,dc=dev",
@@ -51,7 +50,7 @@ describe("LDAP Manager", function() {
                 base: "dc=local,dc=dev",
                 password: "oidc"
             }}
-        };
+        }};
 
         const find = Manager(cfg);
 
