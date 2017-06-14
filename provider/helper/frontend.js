@@ -190,4 +190,5 @@ module.exports = function frontend(provider, settings) {
 
     provider.app.use(router.routes());
     settings.log("front end ready");
+    return provider;
 };
