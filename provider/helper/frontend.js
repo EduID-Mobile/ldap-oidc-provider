@@ -14,8 +14,6 @@ const Router = require("koa-router");
 const render = require("koa-ejs");
 
 module.exports = function frontend(provider, settings) {
-    settings.log("setup front end");
-
     render(provider.app, {
         cache: false,
         layout: "_layout",
@@ -31,14 +29,10 @@ module.exports = function frontend(provider, settings) {
     // const router = Router;
 
     router.get("/interaction/:grant", async (ctxt, next) => {
-        settings.log("call get interaction grant route");
         const cookie = provider.interactionDetails(ctxt.req);
         const client = await provider.Client.find(cookie.params.client_id);
 
-        settings.log("client found");
-
         if (cookie.interaction.error === "login_required") {
-            settings.log("core interaction grant: login required");
             await ctxt.render("login", {
                 client,
                 cookie,
@@ -53,7 +47,6 @@ module.exports = function frontend(provider, settings) {
             });
         }
         else {
-            settings.log("core interaction grant: confirmation required");
             await ctxt.render("interaction", {
                 client,
                 cookie,
@@ -79,11 +72,7 @@ module.exports = function frontend(provider, settings) {
         const cookie = provider.interactionDetails(ctxt.req);
         const adapter = settings.config.adapter("Interaction");
 
-        settings.log("call post interaction grant confirm route");
-
         let result = await adapter.find(cookie.uuid);
-
-        settings.log("found authorization session");
 
         // there is no previous interaction result that we need to expand
         if (!result) {
@@ -101,12 +90,10 @@ module.exports = function frontend(provider, settings) {
         adapter.destroy(cookie.uuid);
 
         provider.interactionFinished(ctxt.req, ctxt.res, result);
-        settings.log("interaction completed, continue");
         await next();
     });
 
     router.post("/interaction/:grant/login", body, async (ctxt, next) => {
-        settings.log("call post interaction grant login route");
         const cookie = provider.interactionDetails(ctxt.req);
         const client = await provider.Client.find(cookie.params.client_id);
 
@@ -115,7 +102,6 @@ module.exports = function frontend(provider, settings) {
 
         if (!account.accountId) {
             // login failed
-            settings.log("login failed, render login view");
             await ctxt.render("login", {
                 client,
                 cookie,
@@ -132,7 +118,6 @@ module.exports = function frontend(provider, settings) {
         else {
             // login succeeded
             // store the account info
-            settings.log("login succeeded");
             const result = {
                 login: {
                     account: account.accountId,
@@ -152,7 +137,6 @@ module.exports = function frontend(provider, settings) {
             // TODO check whether the user already consented using the service
             // only if NO consent or an explicity reset request has been made,
             // we show the consent interaction
-            settings.log("render confirmation view");
             await ctxt.render("interaction", {
                 client,
                 cookie,
@@ -166,7 +150,6 @@ module.exports = function frontend(provider, settings) {
                 baseuri: settings.urls.interaction,
             });
 
-            settings.log("interaction completed, continue");
             await next();
 
             // we should consider the defaultACR it is set for the client
@@ -189,6 +172,5 @@ module.exports = function frontend(provider, settings) {
     });
 
     provider.app.use(router.routes());
-    settings.log("front end ready");
     return provider;
 };
