@@ -51,12 +51,12 @@ class Configurator {
         const settings = {};
 
         Object.keys(def.config)
-            .map(k => {
+            .map((k) => {
                 settings[k] = config.config[k] ? config.config[k] : def.config[k];
                 if (config.config[`${k}Extras`]) {
                     Object
                         .keys(config.config[`${k}Extras`])
-                        .map(ek => settings[k][ek] = config.config[`${k}Extras`][ek]);
+                        .map((ek) => settings[k][ek] = config.config[`${k}Extras`][ek]);
                 }
             });
 
@@ -72,7 +72,7 @@ class Configurator {
             settings.discovery.service_documentation = config.urls.homepage;
         }
 
-        settings.findById = id => this.accountById(id);
+        settings.findById = (id) => this.accountById(id);
         this.adapter = AdapterFactory(config);
 
         instanceConfig = config;
@@ -116,7 +116,7 @@ class Configurator {
     }
 
     getAcr() {
-        let retval = settings.acrValues.find(v => v.indexOf("urn:") === 0);
+        let retval = settings.acrValues.find((v) => v.indexOf("urn:") === 0);
 
         return retval >= 0 ? settings.acrValues[retval] : null;
     }
@@ -150,7 +150,6 @@ class Configurator {
 
         // throw errors on non existing or corrupted files
         const data = await fs.readFile(mapFile);
-
         const result = JSON.parse(data.toString());
 
         cfg.mapping[name] = result;
@@ -160,8 +159,8 @@ class Configurator {
     async loadKeyStores() {
         // return promise when keystores are loaded.
         await Promise.all([
-            this.loadKeyStore(instanceConfig.certificates.external).then(ks => this.mergeStore(ks, "certificates")),
-            this.loadKeyStore(instanceConfig.certificates.internal).then(ks => this.mergeStore(ks, "integrityKeys"))
+            this.loadKeyStore(instanceConfig.certificates.external).then((ks) => this.mergeStore(ks, "certificates")),
+            this.loadKeyStore(instanceConfig.certificates.internal).then((ks) => this.mergeStore(ks, "integrityKeys"))
         ]);
 
         return this.keyStores;
@@ -183,7 +182,7 @@ class Configurator {
         const jwks = await jose.JWK.asKeyStore(this[type]);
 
         await Promise.all(keystore.keys.map((k) => jwks.add(k)));
-        
+
         this[type] = jwks.toJSON(true);
     }
 
