@@ -150,7 +150,7 @@ class Configurator {
 
         // throw errors on non existing or corrupted files
         const data = await fs.readFile(mapFile);
-        const result = JSON.parse(data.toString());
+        const result = JSON.parse(data.toString("utf8"));
 
         cfg.mapping[name] = result;
         return result;

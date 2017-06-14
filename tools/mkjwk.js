@@ -21,6 +21,7 @@ keystore
     .generate("RSA", size)
     .then((result) => {
         // open write stream:
-        process.stdout.write(JSON.stringify(result.toJSON(true)));
+        keystore.add(result);
+        process.stdout.write(JSON.stringify(keystore.toJSON(true)));
         process.exit(0);
     });
