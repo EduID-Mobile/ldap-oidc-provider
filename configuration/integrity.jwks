@@ -1,4 +1,5 @@
 {"keys": [{
+    "kid": "asd2eq400",
     "kty": "oct",
     "k": "TQcYPUBhQvg68X_7hwRyVyRNxpdkN-xsrOqVjgaCi-PsbeBrPHOYHcc4lPDIzdfEtdxpQ7pOMJn5__pW-NJx9w",
     "alg": "HS512"

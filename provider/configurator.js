@@ -4,6 +4,7 @@
 const fs = require("./helper/asyncfs");
 const path = require("path");
 const Account = require("./account.js");
+const jose = require("node-jose");
 
 // The configuration integrates the official default settings with the
 // local settings. This allows administrators for focus on the key aspects
@@ -159,26 +160,31 @@ class Configurator {
     async loadKeyStores() {
         // return promise when keystores are loaded.
         await Promise.all([
-            this.loadKeyStore(instanceConfig.certificates.external).then(ks => this.certificates = ks),
-            this.loadKeyStore(instanceConfig.certificates.internal).then(ks => this.integrityKeys = ks)
+            this.loadKeyStore(instanceConfig.certificates.external).then(ks => this.mergeStore(ks, "certificates")),
+            this.loadKeyStore(instanceConfig.certificates.internal).then(ks => this.mergeStore(ks, "integrityKeys"))
         ]);
 
         return this.keyStores;
     }
 
-    loadKeyStore(cfg) {
-        let kl = new KeyLoader();
+    async loadKeyStore(cfg) {
+        const kl = new KeyLoader();
 
         if (cfg.source === "folder") {
-            return kl
-                .loadKeyDir(cfg.path)
-                .then(() => kl.keys);
+             await kl.loadKeyDir(cfg.path);
         }
         else if (cfg.source === "file") {
-            return kl
-                .loadKey(cfg.path)
-                .then(() => kl.keys);
+            await kl.loadKey(cfg.path);
         }
+        return kl.keys;
+    }
+
+    async mergeStore(keystore, type) {
+        const jwks = await jose.JWK.asKeyStore(this[type]);
+
+        await Promise.all(keystore.keys.map((k) => jwks.add(k)));
+        
+        this[type] = jwks.toJSON(true);
     }
 
     get config() {
