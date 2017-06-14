@@ -173,3 +173,19 @@ It is recommended to mask the OIDC provider behind a web-server/proxy server.
 On Apache 2.4 one needs to activate the proxy module and using the
 [ProxyPass](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html#proxypass)
 configuration that points to the configured port on the installation server.
+
+SSL Termination works as following
+
+> a2enmod headers
+> a2enmod proxy
+
+and the in the server should be configured as following
+```
+RequestHeader set X-Forwarded-Proto "https" env=HTTPS
+RequestHeader set X-Forwarded-Ssl on
+
+ProxyPreserveHost On
+ProxyAddHeaders On
+ProxyRequests off
+ProxyPass /oidc http://localhost:3000
+```
