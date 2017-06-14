@@ -98,7 +98,7 @@ module.exports = function frontend(provider, settings) {
         const client = await provider.Client.find(cookie.params.client_id);
 
         const account = await settings.accountByLogin(ctxt.request.body.login,
-                                ctxt.request.body.password);
+                                                      ctxt.request.body.password);
 
         if (!account.accountId) {
             // login failed

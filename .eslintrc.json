@@ -1,11 +1,11 @@
 {
+    "parser": "babel-eslint",
     "env": {
-        "node": true,
-        "es6": true
+        "node": true
     },
     "extends": "eslint:recommended",
     "parserOptions": {
-        "ecmaVersion": 6
+        "ecmaVersion": 7
     },
     "rules": {
         "indent": [
