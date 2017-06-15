@@ -91,19 +91,22 @@ class Configurator {
         if (!filename) {
             throw "Cannot find OIDC configuration file";
         }
+
         return this.loadConfiguration(filename);
     }
 
     async checkConfigurationDir(filename) {
         filename = path.join(filename.trim(), this.cfgFilename);
-        const exists = await fs.exists(filename);
 
-        if (exists) {
+        try {
             const stat = await fs.stat(filename);
 
             if (stat.isFile()) {
                 return filename;
             }
+        }
+        catch(err) {
+            return false;
         }
 
         return false;
