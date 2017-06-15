@@ -20,14 +20,14 @@
                     "base": "ou=current-accounts,dc=eduid,dc=ch",
                     "scope": "one"
                 },
-                "mapping": "mapping/user"
+                "mapping": "mapping/user.json"
             },
             "Client": {
                 "class": "oauthClientIdentity",
                 "id": "oauthClientID",
                 "source": "common",
                 "base": "ou=federation,dc=eduid,dc=ch",
-                "mapping": "mapping/client"
+                "mapping": "mapping/client.json"
             }
         }
     },

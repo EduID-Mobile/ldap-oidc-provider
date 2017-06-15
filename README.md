@@ -37,7 +37,7 @@ The query parameters and data sources are configured in the
 The query parameters allow the OIDC provider to select the correct source for
 OIDC information.
 
-All data types defined in the Object ```directoryOrganisation``` are considered
+All data types defined in the Object ```ldap.organisation``` are considered
 to be managed in a directory.
 
 For each data type the following attributes can get configured:
@@ -47,37 +47,33 @@ For each data type the following attributes can get configured:
 *   source - the data source (default ```common```).
 *   bind - the identifying property that for authenticating agents. If bind is missing, then the id is used.
 *   base - the bind DN for the data type. If present, this overrides the base configuration of the data source.
+* subclaims - rules for getting additional claim information
+* mapping - configuration for mapping the LDAP attributes into OIDC claims. This configuration points to a mapping file.
 
 Example:
-```javascript
-module.exports.directoryOrganisation = {
+```json
+{
     "Account": {
-        class: "inetOrgPerson",
-        bind: "mail",
-        id: "uid",
-        source: "common",
-        base: "ou=users,dc=local,dc=dev"
+        "class": "inetOrgPerson",
+        "bind": "mail",
+        "id": "uid",
+        "source": "common",
+        "base": "ou=users,dc=local,dc=dev"
     },
     "Client": {
-        class: "organizationalRole",
-        id: "cn",
-        source: "common",
-    },
-    // client credentials SHOULD be the same as the Client.
-    "ClientCredentials": {
-        class: "organizationalRole",
-        id: "cn",
-        source: "common",
+        "class": "organizationalRole",
+        "id": "cn",
+        "source": "common",
     }
-};
+}
 ```
 
 The LDAP Provider allows the IDP to use different directories as sources for
-OIDC data. All data sources must be named in the ```directory```-configuration.
+OIDC data. All data sources must be named in the ```ldap.connection```-configuration.
 the keys of the connections must match the values used as source in the
-configuration section ```directoryOrganisation```.
+configuration section ```ldap.organization```.
 
-For each ```directory``` configured as a data source, LDAP OIDC will keep
+For each ```connection``` configured as a data source, LDAP OIDC will keep
 a separate connection open.
 
 The following configurations are required for a data source:
@@ -92,21 +88,25 @@ The following example illustrates the configuration of two connections.
 **Note**: All records for one data type must be kept in one directory. The LDAP
 provider does not support partitioned user bases across directories.
 
-```
-module.exports.directory = {
-    common: {
-        url: "ldap://server1:389",
-        bind: "cn=oidc,ou=configurations,dc=local,dc=dev",
-        base: "dc=local,dc=dev",
-        password: "oidc"
-    },
-    federation: {
-         url: "ldap://server2:389",
-         bind: "cn=oidc,ou=services,dc=foo,dc=bar",
-         base: "dc=local,dc=foo",
-         password: "foobar"
+```json
+{
+    "ldap": {
+        "connection": {
+            "common": {
+                "url": "ldap://server1:389",
+                "bind": "cn=oidc,ou=configurations,dc=local,dc=dev",
+                "base": "dc=local,dc=dev",
+                "password": "oidc"
+            },
+            "federation": {
+                 "url": "ldap://server2:389",
+                 "bind": "cn=oidc,ou=services,dc=foo,dc=bar",
+                 "base": "dc=local,dc=foo",
+                 "password": "foobar"
+            }
+        }
     }
-};
+}
 ```
 
 LDAP Provider acknowledges that identity management in different organizations
@@ -137,7 +137,7 @@ locations. PEM formatted keys can be imported on the fly during startup from a
 directory.
 
 For pointing the provider to the correct locations for obtaining its keys, use
-the certificates configuration in the ```configuration/settings.js```-file.
+the certificates configuration in you ```settings.json```-file.
 
 ### Manage OAuth2 and OIDC Services in a LDAP Directory
 
@@ -174,18 +174,37 @@ On Apache 2.4 one needs to activate the proxy module and using the
 [ProxyPass](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html#proxypass)
 configuration that points to the configured port on the installation server.
 
-SSL Termination works as following
+The SSL termination removes a bit load from nodejs. It is important to inform
+the service that it runs behind an ssl termination, so it can set the URLs
+correctly. It is configured as following:
 
-> a2enmod headers
-> a2enmod proxy
+First, one needs to activate mod_proxy and mod_headers, if they are not
+active already.
 
-and the in the server should be configured as following
 ```
-RequestHeader set X-Forwarded-Proto "https" env=HTTPS
-RequestHeader set X-Forwarded-Ssl on
+> a2enmod proxy   # 1
+> a2enmod headers # 2
+```
+
+Step 1 is required for masquerading nodejs behind Apache. It provides the
+Proxy* configuration options.
+
+Step 2 is required for the SSL termination. It provides the RequestHeader
+option.
+
+The server's VirtualHost section should be configured as following:
+
+```
+RequestHeader set X-Forwarded-Proto "https" env=HTTPS # 1
+RequestHeader set X-Forwarded-Ssl on                  # 1
 
 ProxyPreserveHost On
 ProxyAddHeaders On
-ProxyRequests off
-ProxyPass /oidc http://localhost:3000
+ProxyRequests Off
+# point the url to the host oidc is running on
+ProxyPass /oidc http://localhost:3000                 # 2
 ```
+
+Step 1 is required for SSL termination.
+
+Step 2 hands the requests to nodejs.

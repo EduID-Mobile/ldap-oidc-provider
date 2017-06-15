@@ -7,12 +7,10 @@ const Provider = require("oidc-provider");
 
 const settings = require("./configurator.js");
 const setupFrontEnd = require("./helper/frontend.js");
-const cfgFile   = require("../configuration/settings.js");
-
 // let provider;
 
 settings
-    .loadConfiguration(cfgFile)
+    .findConfiguration()
     .then(() => settings.loadMappings())
     .then(() => settings.loadKeyStores())
     .then(() => new Provider(settings.issuerUrl, settings.config))

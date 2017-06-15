@@ -1,3 +1,4 @@
+
 "use strict";
 
 // const _ = require("lodash");
@@ -35,13 +36,80 @@ class Configurator {
         this.integrityKeys = {keys: []};
     }
 
-    async loadConfiguration(cfgFile) {
-        const parentDir = path.dirname(__dirname);
+    async findConfiguration(extraPaths = [], force = false) {
+        // search path priority:
+        // 1. extraPaths
+        // 2. OIDC_CONFIG
+        // 3. /etc/oidc
+        // 4. {code directory}/configuration
 
-        if (!path.isAbsolute(cfgFile)) {
-            cfgFile = path.join(parentDir, "configuration", cfgFile);
+        let searchPath = [
+            path.join(path.dirname(__dirname), "configuration")
+        ];
+
+        if (process.platform !== "win32") {
+            searchPath.unshift("/etc/oidc");
         }
 
+        // allow installations to extend the search path
+        const envPath = process.env.OIDC_CONFIG;
+
+        if (envPath && envPath.trim().length) {
+            searchPath = envPath.trim().split(path.delimiter).concat(searchPath);
+        }
+
+        if (extraPaths && extraPaths.length) {
+            if (typeof extraPaths === "string") {
+                extraPaths = extraPaths.trim().split(path.delimiter);
+            }
+            if (Array.isArray(extraPaths)) {
+                if (force) {
+                    searchPath = extraPaths;
+                }
+                else {
+                    searchPath = extraPaths.concat(searchPath);
+                }
+            }
+        }
+
+        this.cfgFilename = "settings.json";
+        // allow installations to overwrite the default filename
+        const envFN = process.env.OIDC_CONFIG_FILENAME;
+
+        if (envFN && envFN.trim().length) {
+            this.cfgFilename = envFN.trim();
+        }
+
+        const validPaths = await Promise.all(
+            searchPath.map(
+                (path) => this.checkConfigurationDir(path)
+            )
+        );
+
+        const filename = validPaths.find((path) => path !== false);
+
+        if (!filename) {
+            throw "Cannot find OIDC configuration file";
+        }
+        return this.loadConfiguration(filename);
+    }
+
+    async checkConfigurationDir(filename) {
+        filename = path.join(filename.trim(), this.cfgFilename);
+        const exists = await fs.exists(filename);
+
+        if (exists) {
+            const stat = await fs.stat(filename);
+
+            if (stat.isFile()) {
+                return filename;
+            }
+        }
+
+        return false;
+    }
+
+    async loadConfiguration(cfgFile) {
         const cfg = await fs.readFile(cfgFile);
 
         return this.reduceConfiguration(JSON.parse(cfg.toString()));
@@ -73,9 +141,11 @@ class Configurator {
         }
 
         settings.findById = (id) => this.accountById(id);
-        this.adapter = AdapterFactory(config);
-
         instanceConfig = config;
+        instanceConfig.mapping = {};
+
+        this.adapter = AdapterFactory(instanceConfig);
+
         return this.settings = settings;
     }
 
@@ -100,7 +170,7 @@ class Configurator {
         }
 
         const accountScope = this.accountInfo.scope || "sub";
-        const connection = await ldap.findAndBind(accountFilter, pwd, scope);
+        const connection = await ldap.findAndBind(accountFilter, pwd, accountScope);
 
         if (!connection) {
             return null;
@@ -116,9 +186,9 @@ class Configurator {
     }
 
     getAcr() {
-        let retval = settings.acrValues.find((v) => v.indexOf("urn:") === 0);
+        let retval = this.config.acrValues.find((v) => v.indexOf("urn:") === 0);
 
-        return retval >= 0 ? settings.acrValues[retval] : null;
+        return retval >= 0 ? this.config.acrValues[retval] : null;
     }
 
     loadMappings() {
@@ -152,7 +222,7 @@ class Configurator {
         const data = await fs.readFile(mapFile);
         const result = JSON.parse(data.toString("utf8"));
 
-        cfg.mapping[name] = result;
+        instanceConfig.mapping[name] = result;
         return result;
     }
 
@@ -170,7 +240,7 @@ class Configurator {
         const kl = new KeyLoader();
 
         if (cfg.source === "folder") {
-             await kl.loadKeyDir(cfg.path);
+            await kl.loadKeyDir(cfg.path);
         }
         else if (cfg.source === "file") {
             await kl.loadKey(cfg.path);
