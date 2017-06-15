@@ -1,8 +1,8 @@
 "use strict";
 
 const jose = require("node-jose");
-const fs = require("asyncfs");
 const path = require("path");
+const fs = require("./asyncfs");
 
 class KeyLoader {
     constructor() {
