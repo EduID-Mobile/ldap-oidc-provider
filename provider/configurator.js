@@ -1,4 +1,3 @@
-
 "use strict";
 
 // const _ = require("lodash");
@@ -213,8 +212,6 @@ class Configurator {
         if (!(mapFile && mapFile.length)) {
             return null;
         }
-
-        const parentDir = path.dirname(__dirname);
 
         if (!path.isAbsolute(mapFile)) {
             mapFile = path.join(this.referencePath, mapFile);
