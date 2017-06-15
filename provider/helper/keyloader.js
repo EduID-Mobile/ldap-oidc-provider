@@ -1,40 +1,24 @@
 "use strict";
 
 const jose = require("node-jose");
-const fs = require("fs");
+const fs = require("asyncfs");
+const path = require("path");
 
 class KeyLoader {
     constructor() {
         this.ks = jose.JWK.createKeyStore();
     }
 
-    chkFile(fn) {
-        return new Promise((success,reject) => {
-            fs.stat(fn, (err, res) => {
-                if (err) {
-                    reject(err);
-                }
-                else if (res.isFile()){
-                    success(fn);
-                }
-                else {
-                    reject(new Error("NOTAFILE"));
-                }
-            });
-        });
+    async chkFile(fn) {
+        const fstat = await fs.stat(fn);
+
+        return fstat.isFile();
     }
 
-    loadFile(fn) {
-        return new Promise((success, reject) => {
-            fs.readFile(fn, (err, data) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    success(data.toString("utf8"));
-                }
-            });
-        });
+    async loadFile(fn) {
+        const data = await fs.readFile(fn);
+
+        return data.toString("utf8");
     }
 
     parseJWK(data) {
@@ -42,94 +26,86 @@ class KeyLoader {
 
         try {
             tdata = JSON.parse(data.trim());
-            if (!(tdata && (tdata.keys || tdata.kty))) {
-                throw new Error("BADJWK");
-            }
         }
         catch(err) {
-            return Promise.reject(data);
+            return data;
         }
-        return Promise.resolve(tdata);
+        return tdata;
     }
 
-    addKey(key, form = null) {
-        return this.ks.add(key, form)
-            .catch(err => { // eslint-disable-line no-unused-vars
-                // clear the error
-                return Promise.resolve();
-            });
+    async addKey(key, form = null) {
+        const args = [key];
+
+        if (form) {
+            args.push(form);
+        }
+
+        try {
+            await this.ks.add(...args);
+        }
+        catch (err) {
+            // ignore
+        }
     }
 
-    importKey(key) {
+    async importKey(key) {
         if (key) {
             if (key.keys) {
                 // add each key in keys
-                return Promise.all(key.keys.map(k => this.addKey(k)));
+                await Promise.all(key.keys.map(k => this.addKey(k)));
             }
             else if (key.kty) {
-                return this.addKey(key);
+                await this.addKey(key);
             }
             else {
-                return this.addKey(key, "pem");
+                await this.addKey(key, "pem");
             }
         }
-        return Promise.resolve();
     }
 
-    loadKey(fn) {
-        return this
-            .chkFile(fn)
-            .then(cfn => this.loadFile(cfn))
-            .then(data => this.parseJWK(data))
-            .catch(err => {
-                if (err.message) {
-                    return Promise.resolve(null);
-                }
-                return Promise.resolve(err);
-            })
-            .then(key => this.importKey(key));
+    async loadKey(fn) {
+        const tFile = await this.chkFile(fn);
+
+        if (tFile) {
+            let data, key;
+
+            try {
+                data = await this.loadFile(fn);
+                key = this.parseJWK(data);
+            }
+            catch (err) {
+                return null;
+            }
+            await this.importKey(key);
+        }
     }
 
-    chkDir(fn) {
-        return new Promise((success,reject) => {
-            fs.stat(fn, (err,res) => {
-                if (err) {
-                    reject(err);
-                }
-                else if (res.isDirectory()){
-                    success(fn);
-                }
-                else {
-                    reject(new Error("NOTAFOLDER"));
-                }
-            });
-        });
+    async chkDir(fn) {
+        const fstat = await fs.stat(fn);
+
+        return fstat.isDirectory();
     }
 
-    readDir(fn) {
-        const path = fn + (fn.charAt(fn.length - 1) === "/" ? "" : "/");
+    async readDir(fn) {
+        const files = await fs.readdir(fn);
 
-        return new Promise((success, reject) => {
-            fs.readdir(fn, (err, files) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    success(files.map(f => path + f));
-                }
-            });
-        });
+        return files.filter((f) => f.indexOf(".") !== 0).map((f) => path.join(fn, f));
     }
 
     handleDirFiles(files) {
         return Promise.all(files.map(fn => this.loadKey(fn)));
     }
 
-    loadKeyDir(fn) {
-        return this
-            .chkDir(fn)
-            .then(fn => this.readDir(fn))
-            .then(files => this.handleDirFiles(files));
+    async loadKeyDir(fn) {
+        const tDir = await this.checkDir(fn);
+
+        if (tDir) {
+            const files = await this.readDir(fn);
+
+            return this.handleDirFiles(files);
+        }
+
+        return null;
     }
 
     get keys() {

@@ -115,6 +115,7 @@ class Configurator {
     async loadConfiguration(cfgFile) {
         const cfg = await fs.readFile(cfgFile);
 
+        this.referencePath = path.dirname(cfgFile);
         return this.reduceConfiguration(JSON.parse(cfg.toString()));
     }
 
@@ -216,7 +217,7 @@ class Configurator {
         const parentDir = path.dirname(__dirname);
 
         if (!path.isAbsolute(mapFile)) {
-            mapFile = path.join(parentDir, "configuration", mapFile);
+            mapFile = path.join(this.referencePath, mapFile);
         }
 
         name = name.toLowerCase();
@@ -241,12 +242,19 @@ class Configurator {
 
     async loadKeyStore(cfg) {
         const kl = new KeyLoader();
+        let tPath = cfg.path;
 
         if (cfg.source === "folder") {
-            await kl.loadKeyDir(cfg.path);
+            if (!path.isAbsolute(tPath)) {
+                tPath = path.join(this.referencePath, tPath);
+            }
+            await kl.loadKeyDir(tPath);
         }
         else if (cfg.source === "file") {
-            await kl.loadKey(cfg.path);
+            if (!path.isAbsolute(tPath)) {
+                tPath = path.join(this.referencePath, tPath);
+            }
+            await kl.loadKey(tPath);
         }
         return kl.keys;
     }
