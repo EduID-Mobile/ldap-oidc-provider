@@ -9,19 +9,13 @@ const jose = require("node-jose");
 // The configuration integrates the official default settings with the
 // local settings. This allows administrators for focus on the key aspects
 // and otherwise stick with the defaults.
-
 const AdapterFactory = require("./adapters/factory.js");
 const KeyLoader = require("./helper/keyloader.js");
 const LoggingFactory = require("./helper/logging.js");
+const findConnection = require("./adapters/ldapmanager.js");
 
 // the defaults are the unaltered settings as provided by oidc-provider.
 const def = require("./settings.js");
-
-const findConnection = require("./adapters/ldapmanager.js");
-
-// enforce cookies over HTTPS, however, Koa-Cookie is broken for proxies
-// _.set(settings, "cookies.short.secure", true);
-// _.set(settings, "cookies.long.secure", true);
 
 let instanceConfig;
 

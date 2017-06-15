@@ -14,10 +14,28 @@ const Router = require("koa-router");
 const render = require("koa-ejs");
 
 module.exports = function frontend(provider, settings) {
+    let viewPath = path.join(path.dirname(__dirname), "views");
+    let layoutfile = "_layout";
+
+    if ("views" in settings.customization) {
+        if ("path" in settings.customization.views) {
+            if (path.isAbsolute(settings.customization.views.path)) {
+                viewPath = settings.customization.views.path;
+            }
+            else {
+                viewPath = path.join(settings.referencePath,
+                                     settings.customization.views.path);
+            }
+        }
+        if ("layout" in settings.customization.views) {
+            layoutfile = settings.customization.views.layout;
+        }
+    }
+
     render(provider.app, {
         cache: false,
-        layout: "_layout",
-        root: path.join(path.dirname(__dirname), "views"),
+        layout: layoutfile,
+        root: viewPath,
     });
 
     // more extra keys? where are they used?
