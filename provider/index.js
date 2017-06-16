@@ -7,10 +7,16 @@ const Provider = require("oidc-provider");
 
 const settings = require("./configurator.js");
 const setupFrontEnd = require("./helper/frontend.js");
+const param = require("./helper/optionparser.js");
 // let provider;
 
+param.options({
+    "config:": ["-c", "--configdir"]
+});
+param.parse(process.argv);
+
 settings
-    .findConfiguration()
+    .findConfiguration(param.opts.config)
     .then(() => settings.loadMappings())
     .then(() => settings.loadKeyStores())
     .then(() => new Provider(settings.issuerUrl, settings.config))
