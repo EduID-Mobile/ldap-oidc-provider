@@ -10,16 +10,20 @@ This version has been tested on both, LTS and the Current version of Node.
 ### Installation
 
 1.  Have access to an LDAP repository.
-2.  Install REDIS on the local machine.
+2.  Have access to a REDIS database or install REDIS on the local machine.
 3.  Download eduid-oidc to the local machine and unpack it.
 4.  Run ```cd ldap-oidc-provider; npm install```
-5.  change the file ```configuration/settings.js``` to match your environment
-6.  copy your local keys into the key directories.
+6.  Create internal integrity keys (for redis) unsing ```node tools/genjwks -c 1 -t oct > path_to_your_private_keystore```
+7.  Create public keys using ```node tools/genjwks -c 1 -t rsa > path_to_your_public_keystore```
+5.  Create a local configuration to match your environment using ```configuration/example.settings.json``` as example
 8.  Create a Web-server Proxy, so nodejs is not directly exposed and restart the
     web-server.
 9.  Run ```npm start```
 
 ### Advanced configuration
+
+If you use a local configuration use ```npm start -c CONFIG_DIRECTORY``` to start
+the service. This will inform the provider to look for its configuration in the ```CONFIG_DIRECTORY```.
 
 #### Directory organization
 
