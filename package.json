@@ -22,7 +22,7 @@
   "author": "Christian Glahn <cpglahn@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=6"
+    "node": ">=8"
   },
   "dependencies": {
     "forever": "^0.15.0",

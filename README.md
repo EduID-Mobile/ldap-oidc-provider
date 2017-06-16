@@ -5,18 +5,20 @@ Node OIDC Implementation for Directory Managed Users and Clients.
 ### Getting started
 
 The LDAP OIDC Provider requires a recent version of [Node](http://nodejs.org).
-This version has been tested on both, LTS and the Current version of Node.
+The service uses several new javascript features, so old versions of node are
+not supported. Therefore, it requires at least node **version 8**.
 
 ### Installation
 
+1.  Install node.
 1.  Have access to an LDAP repository.
 2.  Have access to a REDIS database or install REDIS on the local machine.
 3.  Download eduid-oidc to the local machine and unpack it.
 4.  Run ```cd ldap-oidc-provider; npm install```
-6.  Create internal integrity keys (for redis) unsing ```node tools/genjwks -c 1 -t oct > path_to_your_private_keystore```
-7.  Create public keys using ```node tools/genjwks -c 1 -t rsa > path_to_your_public_keystore```
-5.  Create a local configuration to match your environment using ```configuration/example.settings.json``` as example
-8.  Create a Web-server Proxy, so nodejs is not directly exposed and restart the
+5.  Create internal integrity keys (for redis) unsing ```node tools/genjwks -c 1 -t oct > path_to_your_private_keystore```
+6.  Create public keys using ```node tools/genjwks -c 1 -t rsa > path_to_your_public_keystore```
+7.  Create a local configuration to match your environment using ```configuration/example.settings.json``` as example
+8.  Create a Web-server Proxy, so node is not directly exposed and restart the
     web-server.
 9.  Run ```npm start```
 
@@ -178,7 +180,7 @@ On Apache 2.4 one needs to activate the proxy module and using the
 [ProxyPass](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html#proxypass)
 configuration that points to the configured port on the installation server.
 
-The SSL termination removes a bit load from nodejs. It is important to inform
+The SSL termination removes a bit load from node. It is important to inform
 the service that it runs behind an ssl termination, so it can set the URLs
 correctly. It is configured as following:
 
@@ -190,7 +192,7 @@ active already.
 > a2enmod headers # 2
 ```
 
-Step 1 is required for masquerading nodejs behind Apache. It provides the
+Step 1 is required for masquerading node behind Apache. It provides the
 Proxy* configuration options.
 
 Step 2 is required for the SSL termination. It provides the RequestHeader
@@ -211,4 +213,4 @@ ProxyPass /oidc http://localhost:3000                 # 2
 
 Step 1 is required for SSL termination.
 
-Step 2 hands the requests to nodejs.
+Step 2 hands the requests to node.
