@@ -24,7 +24,7 @@ not supported. Therefore, it requires at least node **version 8**.
 
 ### Advanced configuration
 
-If you use a local configuration use ```npm start -c CONFIG_DIRECTORY``` to start
+If you use a local configuration use ```npm start -- -c CONFIG_DIRECTORY``` to start
 the service. This will inform the provider to look for its configuration in the ```CONFIG_DIRECTORY```.
 
 #### Directory organization
