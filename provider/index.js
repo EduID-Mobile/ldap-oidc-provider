@@ -7,14 +7,22 @@ const Provider = require("oidc-provider");
 
 const settings = require("./configurator.js");
 const setupFrontEnd = require("./helper/frontend.js");
+const param = require("./helper/optionparser.js");
+// let provider;
 
-const provider = new Provider(settings.issuerUrl, settings.config);
+param.options({
+    "config:": ["-c", "--configdir"]
+});
+param.parse(process.argv);
 
 settings
-    .loadKeyStores()
-    .then((keyStores) => provider.initialize(keyStores))
-    .then(() => setupFrontEnd(provider, settings))
-    .then(() => provider.app.listen(settings.config.port))
+    .findConfiguration(param.opts.config)
+    .then(() => settings.loadMappings())
+    .then(() => settings.loadKeyStores())
+    .then(() => new Provider(settings.issuerUrl, settings.config))
+    .then((provider) => provider.initialize(settings.keyStores))
+    .then((provider) => setupFrontEnd(provider, settings))
+    .then((provider) => provider.app.listen(settings.config.port))
     .catch((err) => {
         console.error(err); // eslint-disable-line no-console
         process.exit(1);

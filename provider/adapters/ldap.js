@@ -12,9 +12,8 @@
  * the adapter will do two requests on the same information.
  */
 
-const getMapping = require("../mapping");
+// const getMapping = require("../mapping");
 const mapClaims = require("../mapping/map_claims");
-const findConnection = require("./ldapmanager");
 
 // these are oidc-provider specific and are not optional for the mapping
 const forceArray = [
@@ -39,41 +38,39 @@ class LdapClientAdapter {
    * "RegistrationAccessToken"
    *
    */
-    constructor(name, cfg) {
-        this.log = cfg.log;
+    constructor(name) {
         this.name = name;
-        this.org  = cfg.directoryOrganisation[name];
-        this.ldap = findConnection(this.org.source, cfg);
-        this.mapping = getMapping(name);
+        this.org = {};
     }
 
-    verifyResultSet(result) {
-          // intuitively, we would let the promise fail.
-          // OIDC-provider requires a resolved Promise to handle the not found
-          // promise internally.
-          // a rejected Promise will lead that the action handler will run
-          // into the generic error handling and yield a 500 error.
-
-        return result && result.length ? result[0] : null;
+    connection(connection) {
+        this.ldap = connection;
     }
 
-    transposeAttributes(result) {
+    transform(mapping) {
+        this.mapping = mapping;
+    }
+
+    organization(org) {
+        this.org = org;
+    }
+
+    transposeAttributes(result, scope=null) {
+        if (!this.mapping) {
+            return result;
+        }
+        if (scope && this.mapping[scope]) {
+            return mapClaims(this.mapping[scope], result, forceArray);
+        }
         return mapClaims(this.mapping, result, forceArray);
     }
 
   /**
-   * Return previously stored instance of an oidc-client.
-   *
-   * @return {Promise} Promise fulfilled with either Object (when found and not dropped yet due to
-   * expiration) or falsy value when not found anymore. Rejected with error when encountered.
-   * @param {string} id Identifier of oidc-provider model
-   *
+   * Returns the attributes for an entry
    */
-    find(id) {
-        // let cid = "cn";
-
+    async find(id) {
         if (!(this.org.id && this.org.id.length)) {
-            return Promise.resolve(null);
+            return null;
         }
         let baseDN = null;
 
@@ -81,14 +78,99 @@ class LdapClientAdapter {
             baseDN = this.org.base;
         }
 
-        return this.ldap
-            .find(["&", `objectClass=${this.org.class}`, `${this.org.id}=${id}`], baseDN)
-            .then(res => this.verifyResultSet(res))
-            .then(obj => this.transposeAttributes(obj))
-            .catch(err => {
-                this.log(`${id} not found ${err.message}`);
-                return Promise.reject(err);
+        const scope = this.org.scope || "sub";
+        let filter = ["&", `objectClass=${this.org.class}`, `${this.org.id}=${id}`];
+
+        if (this.org.filter &&
+            this.org.filter.length) {
+
+            filter = filter.concat(this.org.filter);
+        }
+
+        const entries = await this.ldap.find(filter, baseDN, scope);
+
+        if (!(entries && entries.length === 1)) {
+            return null;
+        }
+        const result = this.transposeAttributes(entries[0]);
+
+        // loop through related information.
+        if (!this.org.subclaims) {
+            return result;
+        }
+
+        const subclaims = await Promise.all(this.org.subclaims.map(async (setdef) => await this.loadClaimset(setdef, entries[0])));
+
+        // merge the subclaims into the main result set
+        // note, that the subclaims array needs to be flattened
+        return this.mergeClaims(result, subclaims.reduce((l, c) => l.concat(c), []));
+    }
+
+    mergeClaims(result, subClaims) {
+        const final = subClaims.reduce((acc, val) => {
+            if (val === null) {
+                return acc;
+            }
+            Object.keys(val).map((k) => {
+                if (!acc[k]) {
+                    acc[k] = val[k];
+                }
+                else if (acc[k] &&
+                        !((acc[k] instanceof Array) || typeof(acc[k]) === "string") &&
+                        !((val[k] instanceof Array) || typeof(val[k]) === "string")) {
+
+                    Object.keys(val[k]).map((k2) => {
+                        if (!acc[k][k2]) {
+                            acc[k][k2] = val[k][k2];
+                        }
+                        else {
+                            if (!(acc[k][k2] instanceof Array)) {
+                                acc[k][k2] = [acc[k][k2]];
+                            }
+                            acc[k][k2] = acc[k][k2].concat(val[k][k2]);
+                        }
+                    });
+                }
+                else {
+                    if (!(acc[k] instanceof Array)) {
+                        acc[k] = [acc[k]];
+                    }
+                    acc[k] = acc[k].concat(val[k]);
+                }
             });
+            return acc;
+        },
+        result);
+        return final;
+    }
+
+    async loadClaimset(set, entry) {
+        const basedn = set.base || entry.dn;
+        const idfield = set.id || this.org.id;
+        const scope = set.scope || this.org.scope || "sub";
+
+        let filter = [`${idfield}=${entry[this.org.id]}`];
+
+        if (set.class) {
+            filter.push(`objectClass=${set.class}`);
+        }
+
+        if (set.filter &&
+            set.filter.length) {
+            filter = filter.concat(set.filter);
+        }
+
+        if (filter.length > 1) {
+            filter.unshift("&");
+        }
+
+        const entries = await this.ldap.find(filter, basedn, scope);
+
+        if (!(entries && entries.length)) {
+            return [];
+        }
+
+        return entries.map((subEntry) => this.transposeAttributes(subEntry, set.claim));
     }
 
     upsert(id, payload, expiresIn) { // eslint-disable-line no-unused-vars

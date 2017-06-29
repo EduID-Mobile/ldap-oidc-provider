@@ -6,15 +6,15 @@ const LdapErrors = {
     options: "NoLDAPOptionsProvided",
     url: "NoLDAPServerOption",
     port: "NoLDAPPortOption",
-    rootDN: "NoLDAPRootDN",
-    rootPassword: "NoLDAPRootPassword",
-    baseDN: "NoLDAPBaseDN",
-    userDN: "NoLDAPUserDN",
-    serviceDN: "NoLDAPServiceDN",
-    queryFilter: "EmptyQueryFilter",
+    password: "NoLDAPPassword",
+    base: "NoLDAPBaseDN",
+    bind: "NoLDAPBindDN",
     connection: "NoConnection",
     notFound: "NotFound"
 };
+
+
+const AttrTransformators = [];
 
 /**
  * The LDAPAdapter is a support class to access an LDAP directory for
@@ -61,6 +61,18 @@ const LdapErrors = {
  * ```
  */
 class LDAPAdapter {
+    static addAttributeHandler(operator) {
+        if (AttrTransformators.indexOf(operator) < 0) {
+            AttrTransformators.push(operator);
+        }
+    }
+
+    addAttributeHandler(operator) {
+        if (this.localTransformators.indexOf(operator) < 0) {
+            this.localTransformators.push(operator);
+        }
+    }
+
     constructor(opts, connection = null) {
         if (!opts) {
             throw LdapErrors.options;
@@ -75,26 +87,28 @@ class LDAPAdapter {
                 throw LdapErrors[e];
             }
         });
+        this.localTransformators = [];
+        this.wait = [];
+        this.opts = {};
+        Object.keys(opts).map(k => this.opts[k] = opts[k]);
 
-        this.opts = opts;
         if (connection) {
             this.rootConnection = connection;
         }
-        else {
-            this.waitReady = [];
-            this.connect()
-                .then(c => this.resolveWaitingCue(c))
-                .catch(() => delete this.waitReady);
+    }
+
+    async connect(userdn = null, passwd = null) {
+        if (this.rootConnection && !userdn && !passwd) {
+            return this.rootConnection;
         }
-    }
 
-    resolveWaitingCue(connection) {
-        this.rootConnection = connection;
-        this.waitReady.map(p => p(connection));
-        delete this.waitReady; // forget waitReady!
-    }
+        if (!this.rootConnection) {
+            if (this.connectAttempt) {
+                return null;
+            }
+            this.connectAttempt = true;
+        }
 
-    connect(userdn = null, passwd = null) {
         if (!this.opts) {
             throw LdapErrors.options;
         }
@@ -105,18 +119,21 @@ class LDAPAdapter {
 
         if (userdn === null) {
             userdn = this.opts.bind;
+        }
+
+        if (passwd === null) {
             passwd = this.opts.password;
         }
 
-        var connection = ldap.createClient(cliOpts);
+        const connection = ldap.createClient(cliOpts);
 
-        return new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
+        await new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
             connection.bind(userdn, passwd, (err) => {
                 if (err) {
                     // the adapters MUST NOT throw errors, because this removes
                     // the control from the koa framwork, which then will
                     // raise a server error.
-                    console.log(err); // eslint-disable-line no-console
+                    // console.log(err); // eslint-disable-line no-console
                     // reject(err);
                     resolve(null);
                 }
@@ -125,27 +142,45 @@ class LDAPAdapter {
                 }
             });
         });
+
+        if (!this.rootConnection) {
+            this.rootConnection = connection;
+            delete this.connectAttempt;
+            await Promise.all(this.wait.map((f) => f()));
+            delete this.wait;
+        }
+
+        return connection;
     }
 
     // This little method allows to write LDAP Style filters in JSON notation.
     // ["&", "foo=bar", "!foo=bar", ["|", "bar=foo", "mail=bar@foo.com"]];
     buildFilter(filterObj) {
-        let op = filterObj.shift();
+        if (!filterObj) {
+            filterObj = [];
+        }
+
+        if (!(filterObj instanceof Array)) {
+            filterObj = [filterObj];
+        }
+
+        const op = filterObj.shift();
 
         // and/or handling
         if (op === "&" || op === "|") {
-            let qs = filterObj.map((e) => {
-                if (e instanceof Array) {
-                    e = this.buildFilter(e);
-                }
-                if (e.length) {
-                    return `(${e})`;
+            const qs = filterObj.map((e) => {
+                if (e && e.length) {
+                    return this.buildFilter(e);
                 }
                 return "";
-            });
+            }).filter((e) => e.length);
 
-            if (qs.length) {
-                return op + qs.join("");
+            if (qs.length > 1) {
+                return `(${op}${qs.join("")})`;
+            }
+
+            if (qs.length === 1) {
+                return qs[0];
             }
             return ""; // operator without filters
         }
@@ -153,56 +188,53 @@ class LDAPAdapter {
         // not operator
         if (op === "!") {
              // not has only one filter
-            let e = filterObj.shift();
+            const e = filterObj.shift();
 
-            if (e instanceof Array) {
-                e = this.buildFilter(e);
-            }
-            if (e.length) {
-                return `${op}(${e})`;
+            if (e && e.length) {
+                return `(${op}${this.buildFilter(e)})`;
             }
             return ""; // operator without filter
         }
+
         if (op instanceof Array) {
             // always process arrays
             return this.buildFilter(op);
         }
 
         // pass literals
-        return op || "";
+        return op ? `(${op})` : "";
     }
 
-    _find(filterArray, baseDN = null, scope = "sub") {
-        if (!filterArray) {
-            throw LdapErrors.queryFilter;
+    async _find(filterArray, baseDN = null, scope = "sub") {
+        if (!this.rootConnection) {
+            const p = new Promise((resolve) =>
+                this.wait.push(
+                    () => resolve(this._find(filterArray, baseDN, scope))
+                )
+            );
+            this.connect(); // we silently ignore the connection promise
+            return p;
         }
+
+
         if (!baseDN) {
             baseDN = this.opts.base;
         }
 
-        if (!this.rootConnection) {
-            return new Promise((resolve, reject) => {
-                this.waitReady.push((c) => {
-                    if (c) {
-                        resolve(this._find(filterArray, baseDN, scope));
-                    }
-                    else {
-                        reject("no connection");
-                    }
-                });
-            });
+        if (!baseDN) {
+            throw LdapErrors.base;
+        }
+
+        let filter = `${this.buildFilter(filterArray)}`;
+
+        if (!(filter && filter.length)) {
+            filter = "objectClass=*";
         }
 
         return new Promise((resolve, reject) => {
-            let filter = `${this.buildFilter(filterArray)}`;
-
-            if (!(filter && filter.length)) {
-                filter = "objectClass=*";
-            }
-
             this.rootConnection.search(baseDN,
                                        {
-                                           filter: `(${filter})`,
+                                           filter,
                                            scope: scope
                                        },
                                        (err, res) => {
@@ -219,47 +251,30 @@ class LDAPAdapter {
         });
     }
 
-    find(filterArray, baseDN = null, scope = "sub") {
-        return this._find(filterArray, baseDN, scope)
-            .then(res => res.map(o => this.splitUrls(o)));
-            // .then((res) => { console.log(res); return res; });
+    async find(filterArray, baseDN = null, scope = "sub") {
+        const result = await this._find(filterArray, baseDN, scope);
+
+        await Promise.all(
+            result.map(
+                (record) => this.runTransformators(record)
+            )
+        )
+
+        return result;
+        // return result.map(record => this.splitUrls(record));
     }
 
-    splitUrls(obj) {
-        let urls = {}, label, url;
-
-        if (!obj.labeledURI) {
-            return obj;
-        }
-
-        if (typeof obj.labeledURI === "string") {
-            obj.labeledURI = [obj.labeledURI];
-        }
-
-        if (Array.isArray(obj.labeledURI)) {
-            obj.labeledURI.map(u => {
-                [url, label] = u.split(" ", 2);
-
-                if (label) {
-                    label = label.replace(/[\[\]]/, "");
-                    if (!urls[label]) {
-                        urls[label] = url;
-                    }
-                    else {
-                        if (!Array.isArray(urls[label])) {
-                            urls[label] = [urls[label]];
-                        }
-                        urls[label].push(url);
-                    }
-                }
-            });
-        }
-        else {
-            urls = obj.labeledURI;
-        }
-
-        obj.labeledURI = urls;
-        return obj;
+    async runTransformators(record) {
+        await Promise.all(
+            AttrTransformators.map(
+                (t) => t(record)
+            )
+        );
+        await Promise.all(
+            this.localTransformators.map(
+                (t) => t(record)
+            )
+        );
     }
 
     findBase(baseDN = null) {
@@ -269,29 +284,30 @@ class LDAPAdapter {
     // find and bind functions return a promise that returns a new LDAP
     // connector
 
-    findAndBind(filter, password) {
+    async findAndBind(filter, password, scope = "sub") {
         let opt = {};
 
-        return this.find(filter, this.opts.base)
-            .then(r => r.length ? r[0] : null)
-            .then(e => {
-                if (e) {
-                    opt.base = e.dn;
-                    return this.connect(e.dn, password);
-                }
-                return null;
-            })
-            .then((c) => this.cloneWithConnection(c, opt));
+        const resultset = await this.find(filter, this.opts.base, scope);
+
+        if (resultset.length && resultset[0]) {
+            const entry = resultset[0];
+            const userConnection = await this.connect(entry.dn, password);
+
+            return this.cloneWithConnection(userConnection, {base: entry.dn});
+        }
+
+        return null;
     }
 
     cloneWithConnection(connection, opts = null) {
         let newOpts = {};
 
         if (connection) {
-            Object.keys(this.opts).map(o => { newOpts[o] = this.opts[o]; });
+            Object.keys(this.opts).map(o => newOpts[o] = this.opts[o]);
             if (opts) {
-                Object.keys(opts).map(o => { newOpts[o] = opts[o]; });
+                Object.keys(opts).map(o => newOpts[o] = opts[o]);
             }
+
             return new LDAPAdapter(newOpts, connection);
         }
 
