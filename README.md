@@ -4,6 +4,10 @@ Node OIDC Implementation for Directory Managed Users and Clients.
 
 ### Getting started
 
+This is a LDAP-frontend for the [node OIDC provider](https://github.com/panva/node-oidc-provider).
+It provides adapters and configurations that makes it easier to setup and
+maintain OIDC with information from LDAP/AD directories. 
+
 The LDAP OIDC Provider requires a recent version of [Node](http://nodejs.org).
 The service uses several new javascript features, so old versions of node are
 not supported. Therefore, it requires at least node **version 8**.
