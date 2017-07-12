@@ -26,7 +26,7 @@ describe("KeyLoader", function() {
         const fnGood = "configuration/settings.js";
         const kl = new KeyLoader();
 
-        const res = await kl.chkFile(fnGood)
+        const res = await kl.checkFile(fnGood)
         expect(res).to.be.equal(fnGood)
     });
 
@@ -36,7 +36,7 @@ describe("KeyLoader", function() {
         const fnBad = "configuration/bad.js";
         const kl = new KeyLoader();
 
-        kl.chkFile(fnBad)
+        kl.checkFile(fnBad)
             .then(res => {
                 done("should not read");
             })
@@ -53,7 +53,7 @@ describe("KeyLoader", function() {
         const kl = new KeyLoader();
         let key;
         try {
-            key = await kl.chkFile(fnBad);
+            key = await kl.checkFile(fnBad);
         }
         catch(err) {
             expect(err.message).to.be.equal("NOTAFILE");
@@ -68,8 +68,7 @@ describe("KeyLoader", function() {
         const fnGood = "configuration/keys";
         const kl = new KeyLoader();
 
-        const result = await kl.chkDir(fnGood);
-
+        const result = await kl.checkDirectory(fnGood);
         expect(result).to.be.equal(fnGood);
     });
 
@@ -81,7 +80,7 @@ describe("KeyLoader", function() {
 
         let result;
         try {
-            result = await kl.chkDir(fnBad);
+            result = await kl.checkDirectory(fnBad);
         }
         catch (err) {
             expect(err.message).to.be.equal("NOTAFOLDER");
@@ -96,7 +95,7 @@ describe("KeyLoader", function() {
         const kl = new KeyLoader();
         let result;
         try {
-            result = await kl.chkDir(fnBad);
+            result = await kl.checkDirectory(fnBad);
         }
         catch (err) {
             expect(err.message).to.be.not.empty;
