@@ -9,10 +9,16 @@ class KeyLoader {
         this.ks = jose.JWK.createKeyStore();
     }
 
-    async chkFile(fn) {
+    async checkFile(fn) {
         const fstat = await fs.stat(fn);
 
         return fstat.isFile();
+    }
+
+    async checkDirectory(fn) {
+        const fstat = await fs.stat(fn);
+
+        return fstat.isDirectory();
     }
 
     async loadFile(fn) {
@@ -64,7 +70,7 @@ class KeyLoader {
     }
 
     async loadKey(fn) {
-        const tFile = await this.chkFile(fn);
+        const tFile = await this.checkFile(fn);
 
         if (tFile) {
             let data, key;
@@ -80,12 +86,6 @@ class KeyLoader {
         }
     }
 
-    async chkDir(fn) {
-        const fstat = await fs.stat(fn);
-
-        return fstat.isDirectory();
-    }
-
     async readDir(fn) {
         const files = await fs.readdir(fn);
 
@@ -97,7 +97,7 @@ class KeyLoader {
     }
 
     async loadKeyDir(fn) {
-        const tDir = await this.checkDir(fn);
+        const tDir = await this.checkDirectory(fn);
 
         if (tDir) {
             const files = await this.readDir(fn);

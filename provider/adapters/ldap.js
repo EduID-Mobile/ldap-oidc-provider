@@ -55,7 +55,7 @@ class LdapClientAdapter {
         this.org = org;
     }
 
-    transposeAttributes(result, scope=null) {
+    transposeAttributes(result, scope = null) {
         if (!this.mapping) {
             return result;
         }
@@ -116,8 +116,8 @@ class LdapClientAdapter {
                     acc[k] = val[k];
                 }
                 else if (acc[k] &&
-                        !((acc[k] instanceof Array) || typeof(acc[k]) === "string") &&
-                        !((val[k] instanceof Array) || typeof(val[k]) === "string")) {
+                        !(acc[k] instanceof Array || typeof acc[k] === "string") &&
+                        !(val[k] instanceof Array || typeof val[k] === "string")) {
 
                     Object.keys(val[k]).map((k2) => {
                         if (!acc[k][k2]) {
@@ -140,7 +140,8 @@ class LdapClientAdapter {
             });
             return acc;
         },
-        result);
+                                       result);
+
         return final;
     }
 
