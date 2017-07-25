@@ -263,7 +263,7 @@ class Configurator {
         if (typeof instanceConfig.grant_types === "object" &&
             !Array.isArray(instanceConfig.grant_types)) {
 
-            Object.keys(instanceConfig.grant_types).map((gt) => provider.registerGrantTypes(gt, grantTypeFactory(instanceConfig.grant_types[gt].handler), instanceConfig.grant_types[gt].parameter));
+            Object.keys(instanceConfig.grant_types).map((gt) => provider.registerGrantType(gt, grantTypeFactory(instanceConfig.grant_types[gt].handler), instanceConfig.grant_types[gt].parameter));
         }
         return provider;
     }
