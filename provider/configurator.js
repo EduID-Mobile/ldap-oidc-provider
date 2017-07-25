@@ -129,7 +129,7 @@ class Configurator {
         var confirmUrl = config.urls.interaction;
 
         settings.interactionUrl = function (ia) { // eslint-disable-line no-unused-vars
-            return `${confirmUrl}${this.oidc.uuid}`;
+            return `${confirmUrl}${ia.uuid}`;
         };
 
         config.log = LoggingFactory(config);
