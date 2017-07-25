@@ -1,5 +1,7 @@
 "use strict";
 
+const debug = require("debug")("ldap-oidc:settings");
+
 // const _ = require("lodash");
 const fs = require("./helper/asyncfs");
 const path = require("path");
@@ -148,26 +150,36 @@ class Configurator {
     }
 
     async accountById(userid) {
+        debug(`find account by id = ${userid}`);
+
         const userAdapter = this.adapter("Account");
         const userData = await userAdapter.find(userid);
 
         if (userData) {
+            debug("initialize the account");
             return new Account(userData, userid);
         }
+
+        debug("account not found");
         return null;
     }
 
     async accountByLogin(login, pwd) {
         const ldap = findConnection(instanceConfig)(this.accountInfo.source);
-
         const accountField = this.accountInfo.bind || this.accountInfo.id;
+
         let accountFilter = ["&", [`objectClass=${this.accountInfo.class}`], [`${accountField}=${login}`]];
+
+        debug("find an account by login infomration");
 
         if (this.accountInfo.filter) {
             accountFilter = accountFilter.concat(this.accountInfo.filter);
         }
 
         const accountScope = this.accountInfo.scope || "sub";
+
+        debug(`find user with scope ${accountScope}`);
+
         const connection = await ldap.findAndBind(accountFilter, pwd, accountScope);
 
         if (!connection) {
@@ -177,9 +189,11 @@ class Configurator {
         const uInfo = await connection.findBase();
 
         if (!(uInfo && uInfo.length)) {
+            debug("no user found");
             return null;
         }
 
+        debug("bind user");
         return this.accountById(uInfo[this.accountInfo.id]);
     }
 
