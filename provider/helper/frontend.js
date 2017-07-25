@@ -120,7 +120,7 @@ module.exports = function frontend(provider, settings) {
         const account = await settings.accountByLogin(ctxt.request.body.login,
                                                       ctxt.request.body.password);
 
-        if (!account.accountId) {
+        if (!(account && account.accountId)) {
             // login failed
             await ctxt.render("login", {
                 client,
