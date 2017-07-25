@@ -5,7 +5,7 @@
  *
  * the frontend function sets up the koa routes for the interactive components.
  */
-
+const debug = require("debug")("ldap-oidc");
 const path = require("path");
 
 const bodyParser = require("koa-body");
@@ -47,18 +47,20 @@ module.exports = function frontend(provider, settings) {
     // const router = Router;
 
     router.get("/interaction/:grant", async (ctx, next) => {
-        const details = await provider.interactionDetails(ctx.req);
-        const client = await provider.Client.find(details.params.client_id);
+        const cookie = await provider.interactionDetails(ctx.req);
+        const client = await provider.Client.find(cookie.params.client_id);
 
-        if (details.interaction.error === "login_required") {
+        debug(JSON.stringify(cookie.params));
+
+        if (cookie.interaction.error === "login_required") {
             await ctx.render("login", {
                 client,
-                details,
+                cookie,
                 title: "Sign-in",
-                debug: querystring.stringify(details.params, ",<br/>", " = ", {
+                debug: querystring.stringify(cookie.params, ",<br/>", " = ", {
                     encodeURIComponent: value => value,
                 }),
-                interaction: querystring.stringify(details.interaction, ",<br/>", " = ", {
+                interaction: querystring.stringify(cookie.interaction, ",<br/>", " = ", {
                     encodeURIComponent: value => value,
                 }),
                 baseuri: settings.urls.interaction,
@@ -67,12 +69,12 @@ module.exports = function frontend(provider, settings) {
         else {
             await ctx.render("interaction", {
                 client,
-                details,
+                cookie,
                 title: "Authorize",
-                debug: querystring.stringify(details.params, ",<br/>", " = ", {
+                debug: querystring.stringify(cookie.params, ",<br/>", " = ", {
                     encodeURIComponent: value => value,
                 }),
-                interaction: querystring.stringify(details.interaction, ",<br/>", " = ", {
+                interaction: querystring.stringify(cookie.interaction, ",<br/>", " = ", {
                     encodeURIComponent: value => value,
                 }),
                 baseuri: settings.urls.interaction,
