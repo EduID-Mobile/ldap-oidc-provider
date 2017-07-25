@@ -19,7 +19,7 @@ settings
     .findConfiguration(param.opts.config)
     .then(() => settings.loadMappings())
     .then(() => settings.loadKeyStores())
-    .then(() => new Provider(settings.issuerUrl, settings.config)),
+    .then(() => new Provider(settings.issuerUrl, settings.config))
     .then((provider) => settings.registerGrantTypes(provider))
     .then((provider) => provider.initialize(settings.keyStores))
     .then((provider) => setupFrontEnd(provider, settings))
