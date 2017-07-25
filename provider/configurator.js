@@ -13,6 +13,7 @@ const AdapterFactory = require("./adapters/factory.js");
 const KeyLoader = require("./helper/keyloader.js");
 const LoggingFactory = require("./helper/logging.js");
 const findConnection = require("./adapters/ldapmanager.js");
+const grantTypeFactory = require("./actions");
 
 // the defaults are the unaltered settings as provided by oidc-provider.
 const def = require("./settings.js");
@@ -256,6 +257,15 @@ class Configurator {
         await Promise.all(keystore.keys.map((k) => jwks.add(k)));
 
         this[type] = jwks.toJSON(true);
+    }
+
+    registerGrantTypes(provider) {
+        if (typeof instanceConfig.grant_types === "object" &&
+            !Array.isArray(instanceConfig.grant_types)) {
+
+            Object.keys(instanceConfig.grant_types).map((gt) => provider.registerGrantTypes(gt, grantTypeFactory(instanceConfig.grant_types[gt].handler), instanceConfig.grant_types[gt].parameter));
+        }
+        return provider;
     }
 
     get config() {

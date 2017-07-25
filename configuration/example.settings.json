@@ -60,5 +60,15 @@
             "path": "configuration/integrity.jwks"
         }
     },
-    "logging": false
+    "logging": false,
+    "grant_types": {
+        "urn:ietf:params:oauth:grant-type:jwt-bearer": {
+            "parameter": ["assertion"],
+            "handler": "assertion_jwt_bearer"
+        },
+        "password": {
+            "parameter": ["username", "password"],
+            "handler": "password"
+        }
+    }
 }

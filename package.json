@@ -20,7 +20,6 @@
     "oauth",
     "openid"
   ],
-  "author": "Christian Glahn <cpglahn@gmail.com>",
   "license": "MIT",
   "engines": {
     "node": ">=8"
