@@ -46,33 +46,33 @@ module.exports = function frontend(provider, settings) {
     const router = new Router();
     // const router = Router;
 
-    router.get("/interaction/:grant", async (ctxt, next) => {
-        const cookie = provider.interactionDetails(ctxt.req);
-        const client = await provider.Client.find(cookie.params.client_id);
+    router.get("/interaction/:grant", async (ctx, next) => {
+        const details = await provider.interactionDetails(ctx.req);
+        const client = await provider.Client.find(details.params.client_id);
 
-        if (cookie.interaction.error === "login_required") {
-            await ctxt.render("login", {
+        if (details.interaction.error === "login_required") {
+            await ctx.render("login", {
                 client,
-                cookie,
+                details,
                 title: "Sign-in",
-                debug: querystring.stringify(cookie.params, ",<br/>", " = ", {
+                debug: querystring.stringify(details.params, ",<br/>", " = ", {
                     encodeURIComponent: value => value,
                 }),
-                interaction: querystring.stringify(cookie.interaction, ",<br/>", " = ", {
+                interaction: querystring.stringify(details.interaction, ",<br/>", " = ", {
                     encodeURIComponent: value => value,
                 }),
                 baseuri: settings.urls.interaction,
             });
         }
         else {
-            await ctxt.render("interaction", {
+            await ctx.render("interaction", {
                 client,
-                cookie,
+                details,
                 title: "Authorize",
-                debug: querystring.stringify(cookie.params, ",<br/>", " = ", {
+                debug: querystring.stringify(details.params, ",<br/>", " = ", {
                     encodeURIComponent: value => value,
                 }),
-                interaction: querystring.stringify(cookie.interaction, ",<br/>", " = ", {
+                interaction: querystring.stringify(details.interaction, ",<br/>", " = ", {
                     encodeURIComponent: value => value,
                 }),
                 baseuri: settings.urls.interaction,
