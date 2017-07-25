@@ -64,7 +64,7 @@
     "grant_types": {
         "urn:ietf:params:oauth:grant-type:jwt-bearer": {
             "parameter": ["assertion"],
-            "handler": "assertion_jwt_bearer"
+            "handler": "assertion_jwt_token"
         },
         "password": {
             "parameter": ["username", "password"],
