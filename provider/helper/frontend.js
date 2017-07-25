@@ -89,7 +89,7 @@ module.exports = function frontend(provider, settings) {
     // const body = bodyParser;
 
     router.post("/interaction/:grant/confirm", body, async (ctxt, next) => {
-        const cookie = provider.interactionDetails(ctxt.req);
+        const cookie = await provider.interactionDetails(ctxt.req);
         const adapter = settings.config.adapter("Interaction");
 
         let result = await adapter.find(cookie.uuid);
@@ -114,7 +114,7 @@ module.exports = function frontend(provider, settings) {
     });
 
     router.post("/interaction/:grant/login", body, async (ctxt, next) => {
-        const cookie = provider.interactionDetails(ctxt.req);
+        const cookie = await provider.interactionDetails(ctxt.req);
         const client = await provider.Client.find(cookie.params.client_id);
 
         const account = await settings.accountByLogin(ctxt.request.body.login,
