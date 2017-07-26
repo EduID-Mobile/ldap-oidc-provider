@@ -1,5 +1,7 @@
 "use strict";
+const debug = require("debug");
 
+debug.enable("ldap-oidc:fatal");
 /**
  * This file initializes the provider and tears up the system.
  */
@@ -16,22 +18,24 @@ param.options({
     "verbose": ["-v", "--verbose"],
     "logfile:": ["-l", "--logfile"]
 });
+
 param.parse(process.argv);
 
 if (param.opts.logfile) {
     const lf = fs.createWriteStream(param.opts.logfile);
 
-    process.stdout.write = process.stderr.write = lf.write.bind(lf);
+    debug.log = lf.write.bind(lf);
 }
 
-const error = require("debug")("ldap-oidc:fatal");
+const error = debug("ldap-oidc:fatal");
 let log;
 
 if (param.opts.verbose) {
     // log everything
-    process.env["DEBUG"] = "*";
-    log = require("debug")("ldap-oidc:init");
+    debug.enable("ldap-oidc:*");
+    debug.enable("oidc-provider:*");
 
+    log = debug("ldap-oidc:init");
     log("verbose is set");
 }
 
