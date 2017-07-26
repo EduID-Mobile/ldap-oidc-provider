@@ -61,6 +61,12 @@ values than the assign property, the key listed first will pull all values into
 an array. Note that such split-assignment is limited and should be used only,
 if no semantic alternative is available.
 
+In other settings attributes come in lists that need some cleaning. This allows
+to remove values or change values to ones that the application needs. The
+cleaning happens on the level of the literal values of one attributes. This
+means before assignment takes places. Note that any set assignment will happen
+*after* cleaning took place.
+
 ## Example
 
 ```
@@ -74,6 +80,10 @@ if no semantic alternative is available.
   "address.home": [{"attribute": "homeAddress",
                     "separator": "$",                                  // set processing
                     "assign": ["street_name", "postal_code", "city"]}] // split-assignment
-  "address.postal_code": ["postalCode"]                                // subset mapping
+  "address.postal_code": ["postalCode"],                                // subset mapping
+  "grant_types": [{
+      "attribute": "oauthGrantType",
+      "replace": {"value3": "final_value", "remove_me": null}      
+  }]
 }
 ```

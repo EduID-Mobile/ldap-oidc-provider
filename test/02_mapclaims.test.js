@@ -1,6 +1,8 @@
 "use strict";
 
 /* eslint-disable */
+process.env["DEBUG"] = "test";
+const debug = require("debug")("test");
 
 const { expect } = require("chai");
 
@@ -141,7 +143,16 @@ describe("MapClaims", function() {
             labeledUri: {test: "hello"}
         };
 
-        const result = mapClaims(mapping, source);
+        const myMap = {
+            "labeled": [{
+                attribute: "labeledUri",
+                label: "test"
+            }]
+        }
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+
         expect(result).to.be.an("object");
         expect(result).to.have.keys("labeled");
         expect(result.labeled).to.be.a("string");
@@ -153,7 +164,11 @@ describe("MapClaims", function() {
             data: '{"test": "hello"}'
         };
 
-        const result = mapClaims(mapping, source);
+        const myMap = {
+            "processed": [{attribute: "data", json: true}],
+        };
+
+        const result = mapClaims(myMap, source);
         expect(result).to.be.an("object");
         expect(result).to.have.keys("processed");
         expect(result.processed).to.be.a("object");
@@ -187,7 +202,13 @@ describe("MapClaims", function() {
             labeledUri: { mixed: "hello" }
         };
 
-        const result = mapClaims(mapping, source);
+        const myMap = {
+            "labeled": [{attribute: "labeledUri", label: "test"}],
+            "mixed": ["uri", {"attribute": "labeledUri", "label": "mixed"}],
+        };
+
+        const result = mapClaims(myMap, source);
+
         expect(result).to.be.an("object");
         expect(result).to.have.keys("mixed");
         expect(result.mixed).to.be.a("string");
@@ -285,5 +306,201 @@ describe("MapClaims", function() {
         expect(result.split.tre).to.be.an("array");
         expect(result.split.tre).to.have.lengthOf(2);
         expect(result.split.tre.join(" ")).to.be.equal("fee foo");
+    });
+
+    it("split after label selection", function() {
+        const source = {
+            labeledObject: { mixed: "hello;world", "foo": "bar;baz" }
+        };
+
+        const myMap = {
+            "labeled": [{attribute: "labeledObject", label: "test"}],
+            "mixed": ["uri", {"attribute": "labeledObject", "label": "mixed", "separator": ";"}],
+        };
+
+        const result = mapClaims(myMap, source);
+
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("mixed");
+        expect(result.mixed).to.be.an("array");
+        expect(result.mixed.join(" ")).to.be.equal("hello world");
+    });
+
+    it("split after label selection with assignment", function() {
+        const source = {
+            labeledObject: { mixed: "world;cruel;hello" }
+        };
+
+        const myMap = {
+            "labeled": [{attribute: "labeledObject", label: "test"}],
+            "mixed": ["uri", {
+                "attribute": "labeledObject",
+                "label": "mixed",
+                "separator": ";",
+                "assign":["tre", "two", "one"]
+            }],
+        };
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("mixed");
+        expect(result).not.to.have.keys("labeled");
+        expect(result.mixed).to.be.an("object");
+        expect(result.mixed).to.have.keys("one", "two", "tre");
+        expect(result.mixed.one).to.be.equal("hello");
+        expect(result.mixed.two).to.be.equal("cruel");
+        expect(result.mixed.tre).to.be.equal("world");
+    });
+
+    it("replace attribute values", function() {
+        const source = {
+            object: ["hello", "world"]
+        };
+
+        const myMap = {
+            "output": [{"attribute": "object", "replace": {"world": "user"}}]
+        };
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.an("array");
+        expect(result.output.length).to.be.equal(2);
+        expect(result.output.join(" ")).to.be.equal("hello user");
+    });
+
+    it("replace attribute values single", function() {
+        const source = {
+            object: "world"
+        };
+
+        const myMap = {
+            "output": [{"attribute": "object", "replace": {"world": "user"}}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.a("string");
+        expect(result.output).to.be.equal("user");
+    });
+
+    it("replace attribute values to null", function() {
+        const source = {
+            object: ["hello", "world"]
+        };
+
+        const myMap = {
+            "output": [{"attribute": "object", "replace": {"world": null}}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.a("string");
+        expect(result.output).to.be.equal("hello");
+    });
+
+    it("replace attribute values to null single", function() {
+        const source = {
+            object: "world"
+        };
+
+        const myMap = {
+            "output": [{"attribute": "object", "replace": {"world": null}}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.be.empty;
+    });
+
+    it("replace after split", function() {
+        const source = {
+            object: "hello;cruel;world"
+        };
+
+        const myMap = {
+            "output": [{"attribute": "object", separator: ";", "replace": {"world": null}}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.a("array");
+        expect(result.output.join(" ")).to.be.equal("hello cruel");
+    });
+
+    it("replace after split multi", function() {
+        const source = {
+            object: "hello;cruel;world"
+        };
+
+        const myMap = {
+            "output": [{"attribute": "object", separator: ";", "replace": {"world": null, "cruel": "world"}}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.a("array");
+        expect(result.output.join(" ")).to.be.equal("hello world");
+    });
+
+
+    it("replace after split single", function() {
+        const source = {
+            object: "hello;world"
+        };
+
+        const myMap = {
+            "output": [{"attribute": "object", separator: ";", "replace": {"world": null}}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.a("string");
+        expect(result.output).to.be.equal("hello");
+    });
+
+    it("replace after label", function() {
+        const source = {
+            object: {"hello": "world"}
+        };
+        const myMap = {
+            "output": [{"attribute": "object", label: "hello", "replace": {"world": "user"}}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.a("string");
+        expect(result.output).to.be.equal("user");
+    });
+
+
+    it("replace after label and split", function() {
+        const source = {
+            object: {"hello": "world;class"}
+        };
+        const myMap = {
+            "output": [{"attribute": "object", label: "hello", separator: ";", "replace": {"world": "user"}}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.a("array");
+        expect(result.output.join(" ")).to.be.equal("user class");
     });
 });

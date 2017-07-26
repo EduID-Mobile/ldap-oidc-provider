@@ -1,5 +1,5 @@
 "use strict";
-
+// const debug = require("debug")("test");
 /**
  * mapClaims() uses a mapping and a source data set to transposes it into the
  * target structure. This function just returns what it finds in the LDAP
@@ -16,6 +16,13 @@
  * @param {Array} forceArray (optional)
  * @returns {MIXED} if found the claim value, otherwise null.
  */
+
+function valueSplit(arr, sep) {
+    if (typeof arr === "string") {
+        return arr.split(sep);
+    }
+    return arr.map((e) => e.split(sep));
+}
 
 function mapClaim(claim, value, target) {
     if (value !== null) {
@@ -40,6 +47,70 @@ function mapClaim(claim, value, target) {
         retval[claim] = value;
     }
     return target;
+}
+
+function valueReplace(val, swap) {
+    if (typeof val === "string") {
+        return Object.keys(swap).indexOf(val) < 0 ? val : swap[val];
+    }
+    return val
+        .map((v) => Object.keys(swap).indexOf(v) < 0 ? v : swap[v])
+        .filter((v) => v !== null && typeof v !== undefined);
+}
+
+function valueJson(val) {
+    let retval = null;
+
+    try {
+        if (typeof val === "string") {
+            retval = JSON.parse(val);
+        }
+        else if (Array.isArray(val)) {
+            retval =  val.map((v) => JSON.parse(v));
+        }
+    }
+    catch (err) {
+        retval = null;
+    }
+    return retval;
+}
+
+function valueAssign(val, attrMap) {
+    if (Array.isArray(val) && Array.isArray(attrMap)) {
+        let retval = {};
+
+        attrMap.reverse();
+        val.reverse();
+
+        attrMap.map((m,i) => {
+            if (val[i] !== null && typeof val[i] !== "undefined") {
+                retval[m] = val[i];
+            }
+        });
+        // fill remaining elements into the last attribute
+        if (attrMap.length < val.length) {
+            const len = attrMap.length - 1;
+
+            retval[attrMap[len]] = val.slice(len).reverse();
+        }
+
+        // reverse back otherwise the code breaks
+        attrMap.reverse();
+        return retval;
+    }
+    return val;
+}
+
+function valueExtend(val, suffix) {
+    if (typeof suffix === "string"){
+        if (Array.isArray(val)) {
+            return val.map((v) => typeof v === "string" ? `${v}${suffix}` : v );
+        }
+        if (typeof val === "string") {
+            return `${val}${suffix}`;
+        }
+    }
+    return val;
 }
 
 function handleClaim(claim, source, map, forceArray) {
@@ -97,43 +168,48 @@ function findClaim(claim, source, map) {
             // until we found a match
             for (j = 0; j < attr.length; j++) {
                 if (source[attr[j]]) {
-                    let rv;
+                    let rv = source[attr[j]];
 
-                    if (co.label && co.label.length && source[attr[j]][co.label]) {
-                        return source[attr[j]][co.label];
+                    if (typeof rv === "undefined") {
+                        rv = null;
                     }
-                    if (co.suffix) {
-                        return source[attr[j]] + `@${co.suffix}`;
-                    }
-                    if (co.json) {
-                        try {
-                            rv = JSON.parse(source[attr[j]]);
+
+                    if (rv !== null &&
+                        co.label &&
+                        co.label.length &&
+                        typeof rv === "object" &&
+                        !Array.isArray(rv)){
+                        if (rv[co.label]) {
+                            rv =  rv[co.label];
                         }
-                        catch (err) {
-                            // console.log("JSON PROCESSING ERROR: " + err.message); // eslint-disable-line no-console
+                        else {
                             rv = null;
                         }
-
-                        return rv;
                     }
-                    if (co.separator) {
-                        rv = source[attr[j]].split(co.separator);
-                        if (rv && co.assign) {
-                            let ti = 1, ai = 0, trv = {};
 
-                            for (ai = 0; ai < co.assign.length && ai < rv.length; ai++) {
-                                ti = ai + 1;
+                    if (rv !== null && co.separator) {
+                        rv = valueSplit(rv, co.separator);
+                    }
 
-                                trv[co.assign[co.assign.length - ti]] = rv[rv.length - ti];
-                            }
+                    if (rv !== null && co.replace) {
+                        rv = valueReplace(rv, co.replace);
+                    }
 
-                            if (rv.length - ti > 0) {
-                                // convert first item to array
-                                trv[co.assign[0]] = rv.splice(0, rv.length - ti + 1);
-                                // stash all remaining elements to the array
-                            }
+                    if (rv !== null && co.json) {
+                        rv = valueJson(rv);
+                    }
 
-                            rv = trv;
+                    if (rv !== null && co.assign && Array.isArray(rv)) {
+                        rv = valueAssign(rv, co.assign);
+                    }
+
+                    if (rv !== null !== null && co.suffix) {
+                        rv = valueExtend(rv, co.suffix);
+                    }
+
+                    if (rv !== null) {
+                        if (Array.isArray(rv) && rv.length === 1) {
+                            return rv[0];
                         }
                         return rv;
                     }
