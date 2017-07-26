@@ -1,6 +1,6 @@
 "use strict";
 
-const debug = require("debug")("ldap-oidc:ldap")
+const log = require("debug")("ldap-oidc:ldap")
 
 ;
 /**
@@ -82,7 +82,7 @@ class LdapClientAdapter {
             baseDN = this.org.base;
         }
 
-        debug(`id: ${id}, ${baseDN}`);
+        log(`id: ${id}, ${baseDN}`);
 
         const scope = this.org.scope || "sub";
         let filter = ["&", `objectClass=${this.org.class}`, `${this.org.id}=${id}`];
@@ -93,21 +93,21 @@ class LdapClientAdapter {
             filter = filter.concat(this.org.filter);
         }
 
-        debug(`use filter: ${JSON.stringify(filter)}`);
+        log(`use filter: ${JSON.stringify(filter)}`);
 
         const entries = await this.ldap.find(filter, baseDN, scope);
 
         if (!(entries && entries.length === 1)) {
-            debug("found not entries");
+            log("found not entries");
             return null;
         }
 
-        debug("transpose attributes");
+        log("transpose attributes");
         const result = this.transposeAttributes(entries[0]);
 
         // loop through related information.
         if (!this.org.subclaims) {
-            debug("no subclaim handling necessary");
+            log("no subclaim handling necessary");
             return result;
         }
 
@@ -115,7 +115,7 @@ class LdapClientAdapter {
             this.org.subclaims = [this.org.subclaims];
         }
 
-        debug("handle subclaims");
+        log("handle subclaims");
 
         // FIXME the subclaims request crashes
         const subclaims = [];
@@ -123,7 +123,7 @@ class LdapClientAdapter {
 
         // merge the subclaims into the main result set
         // note, that the subclaims array needs to be flattened
-        debug("merge subclaims");
+        log("merge subclaims");
         return this.mergeClaims(result, subclaims.reduce((l, c) => l.concat(c), []));
     }
 

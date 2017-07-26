@@ -212,6 +212,7 @@ class LDAPAdapter {
                     () => resolve(this._find(filterArray, baseDN, scope))
                 )
             );
+
             this.connect(); // we silently ignore the connection promise
             return p;
         }
@@ -258,7 +259,7 @@ class LDAPAdapter {
             result.map(
                 (record) => this.runTransformators(record)
             )
-        )
+        );
 
         return result;
         // return result.map(record => this.splitUrls(record));
@@ -285,8 +286,6 @@ class LDAPAdapter {
     // connector
 
     async findAndBind(filter, password, scope = "sub") {
-        let opt = {};
-
         const resultset = await this.find(filter, this.opts.base, scope);
 
         if (resultset.length && resultset[0]) {
