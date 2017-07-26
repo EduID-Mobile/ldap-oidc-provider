@@ -120,7 +120,7 @@ module.exports = function frontend(provider, settings) {
         adapter.destroy(cookie.uuid);
 
         debug("complete interaction");
-        provider.interactionFinished(ctxt.req, ctxt.res, result);
+        await provider.interactionFinished(ctxt.req, ctxt.res, result);
         await next();
     });
 
@@ -207,7 +207,7 @@ module.exports = function frontend(provider, settings) {
             //     consent: {},
             // };
             //
-            // provider.interactionFinished(this.req, this.res, result);
+            // await provider.interactionFinished(this.req, this.res, result);
         }
     });
 

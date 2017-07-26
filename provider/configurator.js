@@ -140,7 +140,7 @@ class Configurator {
             settings.discovery.service_documentation = config.urls.homepage;
         }
 
-        settings.findById = (id) => this.accountById(id);
+        settings.findById = (ctx, id) => this.accountById(id);
         instanceConfig = config;
         instanceConfig.mapping = {};
 

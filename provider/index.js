@@ -5,15 +5,25 @@
  */
 const Provider = require("oidc-provider");
 
+
 const settings = require("./configurator.js");
 const setupFrontEnd = require("./helper/frontend.js");
 const param = require("./helper/optionparser.js");
 // let provider;
 
 param.options({
-    "config:": ["-c", "--configdir"]
+    "config:": ["-c", "--configdir"],
+    "verbose": ["-v", "--verbose"]
 });
 param.parse(process.argv);
+
+let debug;
+
+if (param.opts.verbose) {
+    process.env["DEBUG"] = "ldap-oidc\*,oidc-provider:\*";
+    debug = require("debug")("ldap-oidc:init");
+    debug("verbose is set");
+}
 
 settings
     .findConfiguration(param.opts.config)
