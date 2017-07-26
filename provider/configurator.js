@@ -194,7 +194,7 @@ class Configurator {
         }
 
         debug("bind user");
-        return this.accountById(uInfo[this.accountInfo.id]);
+        return this.accountById(uInfo[0][this.accountInfo.id]);
     }
 
     getAcr() {

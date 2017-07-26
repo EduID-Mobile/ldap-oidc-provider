@@ -99,7 +99,7 @@ module.exports = function frontend(provider, settings) {
         debug("POST: authorize the request");
 
         const cookie = await provider.interactionDetails(ctxt.req);
-        const adapter = settings.config.adapter("Interaction");
+        const adapter = settings.adapter("Interaction");
 
         let result = await adapter.find(cookie.uuid);
 
@@ -167,7 +167,7 @@ module.exports = function frontend(provider, settings) {
                 },
             };
 
-            const adapter = settings.config.adapter("Interaction");
+            const adapter = settings.adapter("Interaction");
 
             debug("temporary persistency of the result");
             adapter.upsert(cookie.uuid, result);

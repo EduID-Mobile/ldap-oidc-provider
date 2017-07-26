@@ -1,5 +1,8 @@
 "use strict";
 
+const debug = require("debug")("ldap-oidc:ldap")
+
+;
 /**
  * The LDAP Client Adapter handles the different requests related to the client
  * Information. This covers information for the following adapter types:
@@ -72,11 +75,14 @@ class LdapClientAdapter {
         if (!(this.org.id && this.org.id.length)) {
             return null;
         }
+
         let baseDN = null;
 
         if (this.org.base) {
             baseDN = this.org.base;
         }
+
+        debug(`id: ${id}, ${baseDN}`);
 
         const scope = this.org.scope || "sub";
         let filter = ["&", `objectClass=${this.org.class}`, `${this.org.id}=${id}`];
@@ -87,22 +93,37 @@ class LdapClientAdapter {
             filter = filter.concat(this.org.filter);
         }
 
+        debug(`use filter: ${JSON.stringify(filter)}`);
+
         const entries = await this.ldap.find(filter, baseDN, scope);
 
         if (!(entries && entries.length === 1)) {
+            debug("found not entries");
             return null;
         }
+
+        debug("transpose attributes");
         const result = this.transposeAttributes(entries[0]);
 
         // loop through related information.
         if (!this.org.subclaims) {
+            debug("no subclaim handling necessary");
             return result;
         }
 
-        const subclaims = await Promise.all(this.org.subclaims.map(async (setdef) => await this.loadClaimset(setdef, entries[0])));
+        if (!Array.isArray(this.org.subclaims)) {
+            this.org.subclaims = [this.org.subclaims];
+        }
+
+        debug("handle subclaims");
+
+        // FIXME the subclaims request crashes
+        const subclaims = [];
+        // const subclaims = await Promise.all(this.org.subclaims.map(async (setdef) => await this.loadClaimset(setdef, entries[0])));
 
         // merge the subclaims into the main result set
         // note, that the subclaims array needs to be flattened
+        debug("merge subclaims");
         return this.mergeClaims(result, subclaims.reduce((l, c) => l.concat(c), []));
     }
 
