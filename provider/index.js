@@ -5,7 +5,6 @@
  */
 const Provider = require("oidc-provider");
 
-
 const settings = require("./configurator.js");
 const setupFrontEnd = require("./helper/frontend.js");
 const param = require("./helper/optionparser.js");
@@ -25,14 +24,15 @@ if (param.opts.logfile) {
     process.stdout.write = process.stderr.write = lf.write.bind(lf);
 }
 
-let debug;
+const error = require("debug")("ldap-oidc:fatal");
+let log;
 
 if (param.opts.verbose) {
     // log everything
     process.env["DEBUG"] = "*";
-    debug = require("debug")("ldap-oidc:init");
+    log = require("debug")("ldap-oidc:init");
 
-    debug("verbose is set");
+    log("verbose is set");
 }
 
 settings
@@ -45,6 +45,6 @@ settings
     .then((provider) => setupFrontEnd(provider, settings))
     .then((provider) => provider.app.listen(settings.config.port))
     .catch((err) => {
-        debug(err); // eslint-disable-line no-console
+        error(err); // eslint-disable-line no-console
         process.exit(1);
     });
