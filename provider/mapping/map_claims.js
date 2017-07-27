@@ -113,6 +113,13 @@ function valueExtend(val, suffix) {
     return val;
 }
 
+function valueLowercase(val) {
+    if (Array.isArray(val)) {
+        return val.map((v) => v.toLowerCase());
+    }
+    return val.toLowerCase();
+}
+
 function handleClaim(claim, source, map, forceArray) {
     let c = findClaim(claim, source, map);
 
@@ -203,8 +210,12 @@ function findClaim(claim, source, map) {
                         rv = valueAssign(rv, co.assign);
                     }
 
-                    if (rv !== null !== null && co.suffix) {
+                    if (rv !== null && co.suffix) {
                         rv = valueExtend(rv, co.suffix);
+                    }
+
+                    if (rv != null && co.lowercase) {
+                        rv = valueLowercase(rv);
                     }
 
                     if (rv !== null) {

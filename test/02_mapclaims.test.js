@@ -503,4 +503,39 @@ describe("MapClaims", function() {
         expect(result.output).to.be.a("array");
         expect(result.output.join(" ")).to.be.equal("user class");
     });
+
+    it("lowercase value single", function() {
+        const source = {
+            object: "World"
+        };
+
+        const myMap = {
+            "output": [{"attribute": "object", "lowercase": true}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.a("string");
+        expect(result.output).to.be.equal("world");
+    });
+
+
+    it("lowercase value multi", function() {
+        const source = {
+            object: ["HelLo", "World"]
+        };
+
+        const myMap = {
+            "output": [{"attribute": "object", "lowercase": true}]
+        };
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("output");
+        expect(result.output).to.be.a("array");
+        expect(result.output.join(" ")).to.be.equal("hello world");
+    });
 });
