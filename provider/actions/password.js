@@ -1,10 +1,11 @@
 "use strict";
 
-module.exports = function passwordGrantTypeFactory(providerInstance) {
+module.exports = function passwordGrantTypeFactory(provider) {
+
     return async function passwordGrantType(ctx, next) {
         // FIXME EXAMPLE CODE STOLEN FROM node-oidc-provider
         if (ctx.oidc.params.username === "foo" && ctx.oidc.params.password === "bar") {
-            const AccessToken = providerInstance.AccessToken;
+            const AccessToken = provider.AccessToken;
             const at = new AccessToken({
                 accountId: "foo",
                 clientId: ctx.oidc.client.clientId,
