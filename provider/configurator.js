@@ -17,6 +17,12 @@ const LoggingFactory = require("./helper/logging.js");
 const findConnection = require("./adapters/ldapmanager.js");
 const grantTypeFactory = require("./actions");
 
+// load the provider
+const Provider = require("oidc-provider");
+
+// load the frontend
+const setupFrontEnd = require("./helper/frontend.js");
+
 // the defaults are the unaltered settings as provided by oidc-provider.
 const def = require("./settings.js");
 
@@ -30,6 +36,20 @@ class Configurator {
         // create certificate stubs
         this.certificates = {keys: []};
         this.integrityKeys = {keys: []};
+    }
+
+    async initProvider() {
+        await this.loadMappings();
+        await this.loadKeyStores();
+
+        this.provider = new Provider(this.issuerUrl, this.config);
+        this.registerGrantTypes();
+
+        await this.provider.initialize(this.keyStores);
+
+        setupFrontEnd(this);
+
+        await this.provider.app.listen(this.config.port);
     }
 
     async findConfiguration(extraPaths = [], force = false) {
@@ -273,13 +293,12 @@ class Configurator {
         this[type] = jwks.toJSON(true);
     }
 
-    registerGrantTypes(provider) {
+    registerGrantTypes() {
         if (typeof instanceConfig.grant_types === "object" &&
             !Array.isArray(instanceConfig.grant_types)) {
 
-            Object.keys(instanceConfig.grant_types).map((gt) => provider.registerGrantType(gt, grantTypeFactory(instanceConfig.grant_types[gt].handler), instanceConfig.grant_types[gt].parameter));
+            Object.keys(instanceConfig.grant_types).map((gt) => this.provider.registerGrantType(gt, grantTypeFactory(instanceConfig.grant_types[gt].handler), instanceConfig.grant_types[gt].parameter));
         }
-        return provider;
     }
 
     get config() {

@@ -13,9 +13,7 @@ param.options({
 param.parse(process.argv);
 
 if (param.opts.logfile) {
-    const lf = fs.createWriteStream(param.opts.logfile);
-
-    const c = new console.Console(lf); // eslint-disable-line no-console
+    const c = new console.Console(fs.createWriteStream(param.opts.logfile)); // eslint-disable-line no-console
 
     Debug.log = c.log.bind(c);
     Debug.inspectOpts.colors = false; // FIXME There MUST be a better way...
@@ -37,20 +35,14 @@ log("logging is active");
 /**
  * This file initializes the provider and tears up the system.
  */
-const Provider = require("oidc-provider");
+// const Provider = require("oidc-provider");
 
 const settings = require("./configurator.js");
-const setupFrontEnd = require("./helper/frontend.js");
+// const setupFrontEnd = require("./helper/frontend.js");
 
 settings
     .findConfiguration(param.opts.config)
-    .then(() => settings.loadMappings())
-    .then(() => settings.loadKeyStores())
-    .then(() => new Provider(settings.issuerUrl, settings.config))
-    .then((provider) => settings.registerGrantTypes(provider))
-    .then((provider) => provider.initialize(settings.keyStores))
-    .then((provider) => setupFrontEnd(provider, settings))
-    .then((provider) => provider.app.listen(settings.config.port))
+    .then(() => settings.initProvider())
     .catch((err) => {
         error(err); // eslint-disable-line no-console
         process.exit(1);

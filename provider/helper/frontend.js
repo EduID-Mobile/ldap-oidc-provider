@@ -13,7 +13,9 @@ const querystring = require("querystring");
 const Router = require("koa-router");
 const render = require("koa-ejs");
 
-module.exports = function frontend(provider, settings) {
+module.exports = function frontend(settings) {
+    const provider = settings.provider;
+
     let viewPath = path.join(path.dirname(__dirname), "views");
     let layoutfile = "_layout";
 
@@ -212,5 +214,4 @@ module.exports = function frontend(provider, settings) {
     });
 
     provider.app.use(router.routes());
-    return provider;
 };
