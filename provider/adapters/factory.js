@@ -24,7 +24,8 @@ module.exports = function AdapterFactory(cfg) {
             const adapter = new LdapAdapter(name);
 
             const org = cfg.ldap.organization[name];
-            const mapping = cfg.mapping[name] || getMapping(name);
+
+            const mapping = cfg.mapping[name.toLowerCase()] || getMapping(name);
 
             adapter.transform(mapping);
             adapter.organization(org);

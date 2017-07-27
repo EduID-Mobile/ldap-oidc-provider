@@ -236,7 +236,7 @@ class Configurator {
             return null;
         }
 
-        let mapFile = instanceConfig.ldap.organization[name];
+        let mapFile = instanceConfig.ldap.organization[name] ? instanceConfig.ldap.organization[name].mapping : null;
 
         if (!(mapFile && mapFile.length)) {
             return null;

@@ -66,12 +66,12 @@ class LdapClientAdapter {
 
         if (scope && this.mapping[scope]) {
             retval = mapClaims(this.mapping[scope], result, forceArray);
-            log("%O", retval);
+            log("scope free %O", retval);
             return retval;
         }
 
         retval =  mapClaims(this.mapping, result, forceArray);
-        log("%O", retval);
+        log("scope free %O", retval);
         return retval;
     }
 
