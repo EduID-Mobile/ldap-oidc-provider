@@ -1,17 +1,8 @@
 "use strict";
-const debug = require("debug");
 
-debug.enable("ldap-oidc:fatal");
-/**
- * This file initializes the provider and tears up the system.
- */
-const Provider = require("oidc-provider");
-
-const settings = require("./configurator.js");
-const setupFrontEnd = require("./helper/frontend.js");
+const Debug = require("debug");
 const param = require("./helper/optionparser.js");
-const fs = require("fs");
-// let provider;
+const fs    = require("fs");
 
 param.options({
     "config:": ["-c", "--configdir"],
@@ -24,20 +15,32 @@ param.parse(process.argv);
 if (param.opts.logfile) {
     const lf = fs.createWriteStream(param.opts.logfile);
 
-    debug.log = lf.write.bind(lf);
+    const c = new console.Console(lf); // eslint-disable-line no-console
+
+    Debug.log = c.log.bind(c);
+    Debug.inspectOpts.colors = false; // FIXME There MUST be a better way...
 }
 
-const error = debug("ldap-oidc:fatal");
-let log;
+Debug.enable("ldap-oidc:fatal");
 
 if (param.opts.verbose) {
     // log everything
-    debug.enable("ldap-oidc:*");
-    debug.enable("oidc-provider:*");
-
-    log = debug("ldap-oidc:init");
-    log("verbose is set");
+    Debug.enable("ldap-oidc:*,oidc-provider:*");
 }
+
+const error = new Debug("ldap-oidc:fatal");
+const log = new Debug("ldap-oidc:init");
+
+error("errors are active");
+log("logging is active");
+
+/**
+ * This file initializes the provider and tears up the system.
+ */
+const Provider = require("oidc-provider");
+
+const settings = require("./configurator.js");
+const setupFrontEnd = require("./helper/frontend.js");
 
 settings
     .findConfiguration(param.opts.config)
