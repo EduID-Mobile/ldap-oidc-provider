@@ -8,7 +8,7 @@ const connection = {};
 LDAPConnection.addAttributeHandler(splitLabeledUri);
 
 module.exports = function LdapManager(settings) {
-    const directory = settings.ldap.connection;
+    const directory = settings.ldap ? settings.ldap.connection : {};
 
     return function (name) {
         if (!connection[name] && directory[name]) {
