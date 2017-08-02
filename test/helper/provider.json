@@ -1,0 +1,36 @@
+{
+    "memory_db": {
+        "organization": [
+            "Account", "Client", "ClientCredentials", "Token", "Session",
+            "AuthorizationCode", "RefreshToken", "InitialAccessToken",
+            "RegistrationAccessToken"
+        ]
+    },
+    "urls": {
+        "issuer": "http://localhost:3000/",
+        "interaction": "http://localhost:3000/interaction/",
+        "homepage": "https://eduid.htwchur.ch"
+    },
+    "config": {
+        "port": 3000,
+        "claimsExtra": {
+            "eduid": ["affiliation"]
+        }
+    },
+    "certificates": {
+        "external": {
+            "source": "file",
+            "path": "pemkeys/example.jwks"
+        },
+        "internal": {
+            "source": "file",
+            "path": "pemkeys/integrity.jwk"
+        }
+    },
+    "grant_types": {
+        "urn:ietf:params:oauth:grant-type:jwt-bearer": {
+            "parameter": ["assertion"],
+            "handler": "assertion_jwt_token"
+        }
+    }
+}

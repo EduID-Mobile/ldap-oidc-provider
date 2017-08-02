@@ -1,0 +1,9 @@
+{
+    "client_id": "devclient.htwchur.ch",
+    "client_secret": "234aSDQwr4134tzgwevfsaHJADSF234as21",
+    "grant_types": ["refresh_token", "authorization_code", grantType],
+    "redirect_uris": ["http://localhost:3001"],
+    "jwk": {
+        "keys": []
+    }
+}

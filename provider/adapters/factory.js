@@ -9,7 +9,7 @@ const getMapping = require("../mapping");
 const LdapManager = require("./ldapmanager");
 
 module.exports = function AdapterFactory(cfg) {
-    const ldapTypes = cfg.ldap && cfg.ldap.organization ? Object.keys(cfg.ldap.organization) : {};
+    const ldapTypes = cfg.ldap && cfg.ldap.organization ? Object.keys(cfg.ldap.organization) : [];
     const findConnection = LdapManager(cfg);
 
     return function getAdapter(name) {
@@ -37,7 +37,7 @@ module.exports = function AdapterFactory(cfg) {
 
         if (cfg.memory_db &&
             cfg.memory_db.organization &&
-            cfg.memory_db.configuration.indexOf(name)) {
+            cfg.memory_db.organization.indexOf(name)) {
             // memory_db is for testing only
             return new MemoryAdapter(name);
         }
