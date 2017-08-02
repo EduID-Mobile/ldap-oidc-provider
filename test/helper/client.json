@@ -1,0 +1,11 @@
+{
+    "client_id": "devclient.htwchur.ch",
+    "client_secret": "234aSDQwr4134tzgwevfsaHJADSF234as21",
+    "jwk": {
+        "keys": [
+            {
+                "kid": "devclient.htwchur.ch"
+            }
+        ]
+    }
+}

@@ -71,11 +71,13 @@ class Configurator {
         const envPath = process.env.OIDC_CONFIG;
 
         if (envPath && envPath.trim().length) {
+            //split mutliple paths, if provided
             searchPath = envPath.trim().split(path.delimiter).concat(searchPath);
         }
 
         if (extraPaths && extraPaths.length) {
             if (typeof extraPaths === "string") {
+                //split mutliple paths, if provided
                 extraPaths = extraPaths.trim().split(path.delimiter);
             }
             if (Array.isArray(extraPaths)) {
@@ -133,6 +135,15 @@ class Configurator {
 
         this.referencePath = path.dirname(cfgFile);
         return this.reduceConfiguration(JSON.parse(cfg.toString()));
+    }
+
+    setConfiguration(config, refPath = "") {
+        if (typeof config === "string") {
+            config = JSON.parse(config);
+        }
+
+        this.referencePath = refPath || "";
+        return this.reduceConfiguration(config);
     }
 
     reduceConfiguration(config) {
@@ -223,12 +234,13 @@ class Configurator {
         return retval >= 0 ? this.config.acrValues[retval] : null;
     }
 
-    loadMappings() {
+    async loadMappings() {
         instanceConfig.mapping = {};
-
-        return Promise.all(Object.keys(instanceConfig.ldap.organization).map(
-            (k) => this.loadMappingFile(k)
-        ));
+        if (instanceConfig.ldap) {
+            await Promise.all(Object.keys(instanceConfig.ldap.organization).map(
+                (k) => this.loadMappingFile(k)
+            ));
+        }
     }
 
     async loadMappingFile(name) {
