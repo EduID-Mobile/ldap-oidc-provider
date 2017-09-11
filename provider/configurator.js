@@ -1,6 +1,7 @@
 "use strict";
 
 const debug = require("debug")("ldap-oidc:settings");
+const assert = require("assert");
 
 // const _ = require("lodash");
 const fs = require("./helper/asyncfs");
@@ -17,6 +18,8 @@ const LoggingFactory = require("./helper/logging.js");
 const findConnection = require("./adapters/ldapmanager.js");
 const grantTypeFactory = require("./actions");
 
+const compose = require("koa-compose");
+
 // load the provider
 const Provider = require("oidc-provider");
 
@@ -25,6 +28,7 @@ const setupFrontEnd = require("./helper/frontend.js");
 
 // the defaults are the unaltered settings as provided by oidc-provider.
 const def = require("./settings.js");
+const assertionClaimHandler = {};
 
 let instanceConfig;
 
@@ -106,9 +110,7 @@ class Configurator {
 
         const filename = validPaths.find((path) => path !== false);
 
-        if (!filename) {
-            throw "Cannot find OIDC configuration file";
-        }
+        assert(filename, "Cannot find OIDC configuration file");
 
         return this.loadConfiguration(filename);
     }
@@ -271,8 +273,10 @@ class Configurator {
     async loadKeyStores() {
         // return promise when keystores are loaded.
         await Promise.all([
-            this.loadKeyStore(instanceConfig.certificates.external).then((ks) => this.mergeStore(ks, "certificates")),
-            this.loadKeyStore(instanceConfig.certificates.internal).then((ks) => this.mergeStore(ks, "integrityKeys"))
+            this.loadKeyStore(instanceConfig.certificates.external)
+                .then((ks) => this.mergeStore(ks, "certificates")),
+            this.loadKeyStore(instanceConfig.certificates.internal)
+                .then((ks) => this.mergeStore(ks, "integrityKeys"))
         ]);
 
         return this.keyStores;
@@ -309,8 +313,24 @@ class Configurator {
         if (typeof instanceConfig.grant_types === "object" &&
             !Array.isArray(instanceConfig.grant_types)) {
 
-            Object.keys(instanceConfig.grant_types).map((gt) => this.provider.registerGrantType(gt, grantTypeFactory(instanceConfig.grant_types[gt].handler), instanceConfig.grant_types[gt].parameter));
+            Object.keys(instanceConfig.grant_types)
+                .map((gt) => this.provider.registerGrantType(gt,
+                                                             grantTypeFactory(instanceConfig.grant_types[gt].handler)(this),
+                                                             instanceConfig.grant_types[gt].parameter));
         }
+    }
+
+    registerAssertionValidator(assertionClaim, claimValidator) {
+        assert(assertionClaim, "no assertion claim provided");
+        assert(claimValidator, "no claim validator provided ");
+        assert.equal(typeof claimValidator, "function", "claim handler is not a function");
+        assert(assertionClaimHandler[assertionClaim], "claim handler already configured");
+
+        assertionClaimHandler[assertionClaim] = claimValidator;
+    }
+
+    getAssertionValidators(claimset) {
+        return compose(Object.keys(assertionClaimHandler).filter((claim) => claimset.includes(claim)));
     }
 
     get config() {
