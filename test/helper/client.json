@@ -4,6 +4,10 @@
     "grant_types": ["refresh_token", "authorization_code", grantType],
     "redirect_uris": ["http://localhost:3001"],
     "jwk": {
-        "keys": []
+        "keys": [
+            {
+                "kid": "devclient.htwchur.ch"
+            }
+        ]
     }
 }
