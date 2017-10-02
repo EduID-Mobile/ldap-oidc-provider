@@ -4,6 +4,7 @@ module.exports.authenticate = require("./authenticate");
 module.exports.authorize = require("./authorize");
 module.exports.debugAssertionContext = require("./debugAssertionContext");
 module.exports.decryptAssertion = require("./decryptAssertion");
+module.exports.grantAccessToken = require("./grantAccessToken");
 module.exports.handleAssertion = require("./handleAssertion");
 module.exports.loadSub = require("./loadSub");
 module.exports.parameterCheck = require("./parameterCheck");
