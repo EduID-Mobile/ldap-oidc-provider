@@ -2,8 +2,8 @@
     sub : username or ID
     iss : registered client or device instance
     aud : AP Token endpoint
-    azp (+ x_crd) : instance uuid (device id). becomes iss
-    azp (- x_crd) : redirect_uri of the academic service.
+    azp (+ cnf.jwk): instance uuid (device id). becomes iss
+    azp (+ cnf.kid): redirect_uri of the academic service.
     iat : timestamp when the assertion has been created.
     exp : timestamp until when the assertion is valid (e.g. iat + 5 min.)
     x_crd : credentials (e.g. password)
