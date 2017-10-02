@@ -1,7 +1,7 @@
 "use strict";
 
 const compose = require("koa-compose");
-const stack = require("./assertion/");
+const stack = require("./assertion");
 
 // we should have a factory for the settings, too.
 module.exports = function settingsfactory(settings) {
