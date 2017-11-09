@@ -18,12 +18,14 @@ module.exports = function factory() {
             // case 1: compact serialization
             debug("assertion payload in compact serialization");
             try {
-                decoded = JWT.decode(jwt);
+                decoded = await JWT.decode(jwt);
             }
             catch (error) {
                 debug("assertion payload is an invalid compact serialization");
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
+
+            debug("%O", decoded);
         }
         else {
             try {
