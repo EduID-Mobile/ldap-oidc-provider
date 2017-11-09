@@ -7,6 +7,7 @@ const { JWK: { asKeyStore } } = require("node-jose");
 
 module.exports = function factory(provider, settings) { // eslint-disable-line
     async function validateJwtWithKey(ctx, jwt, jwks) {
+        debug("validate JWT with a Key");
         if (!jwks) {
             debug("no key to validate");
             ctx.throw(new InvalidRequestError("invalid assertion"));
