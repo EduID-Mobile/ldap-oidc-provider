@@ -20,8 +20,9 @@ module.exports = function factory(provider) { // eslint-disable-line
         }
 
         ctx.oidc.assertion_grant = {};
-        debug(`${params} ${typeof params}`);
-        ctx.oidc.assertion_grant.scope = params.split(" ");
+
+        // handle the scope correctly
+        ctx.oidc.assertion_grant.scope = params.scope.split(" ");
 
         await next();
     };
