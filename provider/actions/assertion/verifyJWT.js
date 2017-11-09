@@ -46,7 +46,7 @@ module.exports = function factory() {
             decoded.payload.aud &&
             decoded.payload.sub)) {
 
-            debug("assertion payload is not in JSON serialization");
+            debug("mandatory assertion claims are missings");
             ctx.throw(new InvalidRequestError("invalid assertion provided"));
         }
 
