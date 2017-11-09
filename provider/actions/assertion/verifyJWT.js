@@ -11,6 +11,9 @@ module.exports = function factory() {
 
         let decoded;
 
+        debug("%O", jwt);
+        debug(jwt.split(".").length);
+
         if (jwt.split(".").length === 3) {
             // case 1: compact serialization
             debug("assertion payload in compact serialization");
