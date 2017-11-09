@@ -2,17 +2,22 @@
 
 ```
 {
-    sub : username or ID
-    iss : registered client or device instance
+    sub : username (authentication phase) or ID (authorization phase)
+    iss : registered client (authentication phase) or device instance (authorization phase)
     aud : AP Token endpoint
-    azp (+ cnf.jwk): instance uuid (device id). becomes iss
-    azp (+ cnf.kid): redirect_uri of the academic service.
+    azp (+ cnf.jwk): instance uuid (device id). becomes iss (authentication phase)
+    azp (+ cnf.kid): redirect_uri of the academic service (authorization phase)
     iat : timestamp when the assertion has been created.
     exp : timestamp until when the assertion is valid (e.g. iat + 5 min.)
+    cnf : public confirmation key (cnf.jwk, authentication phase)/confirmation key reference (cnf.kid, authorization phase)
     x_crd : credentials (e.g. password)
     x_jwt : access token issued by AP to the assertion issuer (optional)
 }
 ```
+
+All assertions are encrypted for the AP (that is this service).
+
+During the authentication phase the Trust Agent App needs to register its device (via the azp claim)
 
 # 1.1 Request
 
