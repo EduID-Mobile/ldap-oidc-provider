@@ -315,7 +315,7 @@ class Configurator {
 
             Object.keys(instanceConfig.grant_types)
                 .map((gt) => this.provider.registerGrantType(gt,
-                                                             grantTypeFactory(instanceConfig.grant_types[gt].handler)(this),
+                                                             grantTypeFactory(instanceConfig.grant_types[gt].handler),
                                                              instanceConfig.grant_types[gt].parameter));
         }
     }
