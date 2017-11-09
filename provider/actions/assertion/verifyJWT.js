@@ -81,8 +81,10 @@ module.exports = function factory() {
         }
 
         // Timestamp validation for iat, nbf, and exp
-        const now = (new Date()).now() / 1000;
+        const now = Date.now() / 1000;
         const old = now - 1800; // 30 min is max, should be configurable
+
+        debug(`now (${now}) vs. old (${old})`);
 
         if (decoded.payload.iat) {
             if (isNaN(decoded.payload.iat) ||

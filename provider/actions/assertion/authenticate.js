@@ -10,7 +10,7 @@ module.exports = function factory(provider, settings) {
             debug("authenticate");
 
             const claims = ctx.oidc.assertion_grant.body;
-            const now = (new Date()).now();
+            const now = Date.now();
 
             ctx.oidc.assertion_grant.useJwk = false;
 

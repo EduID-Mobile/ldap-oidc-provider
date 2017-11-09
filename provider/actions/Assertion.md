@@ -71,7 +71,7 @@ During the authentication phase the Trust Agent App needs to register its device
 
 [ ] 3.1.10 The assertions payload MAY contain an azp.
 
-[ ] 3.1.11 If azp is present and apz is not matching the assertions issuer, then the issuer MUST be registered for proxy_authorization.
+[ ] 3.1.11 If azp is present and azp is not matching the assertions issuer, then the issuer MUST be registered for proxy_authorization.
 
 [x] 3.1.12 proxy_authorization SHOULD be granted only to trust agents.
 
