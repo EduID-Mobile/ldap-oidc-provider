@@ -67,6 +67,9 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
 
         const client = await validateClient(ctx, iss);
 
+        debug(`kid == ${kid}`);
+        debug("client %O", client);
+
         await validateJwtWithKey(ctx, jwt, client.jwks.keys[kid]);
     }
 
