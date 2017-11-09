@@ -1,11 +1,14 @@
 "use strict";
 
+const debug = require("debug")("ldap-oidc:jwt-assertion-pipeline");
 const compose = require("koa-compose");
 const stack = require("./assertion");
 
 // we should have a factory for the settings, too.
 module.exports = function settingsfactory(settings) {
+    debug("prepare pipeline");
     return function jwtAssertionGrantTypeFactory(provider) {
+        debug("init pipeline");
         return compose([
             stack.parameterCheck(provider),
             stack.scopeValidation(provider),
