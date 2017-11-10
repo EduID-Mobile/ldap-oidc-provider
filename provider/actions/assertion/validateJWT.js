@@ -43,6 +43,7 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
         const kid = jwt.payload.cnf.kid;
         const iss = jwt.payload.iss;
 
+        // adapter function crashes because settings is undefined
         const cnfKey = await settings.adapter("ConfirmationKeys").find(kid);
 
         if (!(cnfKey && cnfKey.azp && cnfKey.azp === iss)) {

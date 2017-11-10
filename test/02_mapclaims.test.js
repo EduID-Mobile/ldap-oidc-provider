@@ -35,7 +35,6 @@ describe("MapClaims", function() {
         expect(result).to.have.keys("direct");
         expect(result.direct).to.be.a("string");
         expect(result.direct).to.be.equal("hello");
-
     });
 
     it("masked direct mapping", function() {
@@ -63,6 +62,7 @@ describe("MapClaims", function() {
     });
 
     it("flat mapping simple first", function() {
+        // this maps the first attribute in the mapping definition
         const source = {
             f1: "hello"
         };
@@ -75,6 +75,7 @@ describe("MapClaims", function() {
     });
 
     it("flat mapping simple second", function() {
+        // this maps the second attribute in the mapping definition
         const source = {
             flatTest: "world"
         };
@@ -87,6 +88,7 @@ describe("MapClaims", function() {
     });
 
     it("flat mapping duplicate", function() {
+        // According to the mapping spec only the f1 attribute should be mapped
         const source = {
             f1: "hello",
             flatTest: "world"
@@ -159,6 +161,51 @@ describe("MapClaims", function() {
         expect(result.labeled).to.be.equal("hello");
     });
 
+    // TODO verify that labeled mapping with multiple labels and no labels
+    //      works correctly.
+
+    it("labeled mapping with multiple labels", function() {
+        const source = {
+            labeledUri: {test: "hello", ignore: "blabla"}
+        };
+
+        const myMap = {
+            "labeled": [{
+                attribute: "labeledUri",
+                label: "test"
+            }]
+        }
+
+        const result = mapClaims(myMap, source);
+        // debug(JSON.stringify(result));
+
+        expect(result).to.be.an("object");
+        expect(result).to.have.keys("labeled");
+        expect(result.labeled).to.be.a("string");
+        expect(result.labeled).to.be.equal("hello");
+    });
+
+    it("labeled mapping without labels", function() {
+        const source = {
+            labeledUri: "hello"
+        };
+
+        const myMap = {
+            "labeled": [{
+                attribute: "labeledUri",
+                label: "test"
+            }]
+        }
+
+        const result = mapClaims(myMap, source);
+        debug(JSON.stringify(result));
+
+        expect(result).to.be.an("object");
+        expect(result).not.to.have.keys("labeled");
+        // expect(result.labeled).to.be.a("string");
+        // expect(result.labeled).to.be.equal("hello");
+    });
+
     it("json mapping ok", function() {
         const source = {
             data: '{"test": "hello"}'
@@ -202,6 +249,8 @@ describe("MapClaims", function() {
             labeledUri: { mixed: "hello" }
         };
 
+        // The test checks that the prior label spec does not block the later
+        // mixed spec (given in "mixed").
         const myMap = {
             "labeled": [{attribute: "labeledUri", label: "test"}],
             "mixed": ["uri", {"attribute": "labeledUri", "label": "mixed"}],
@@ -291,6 +340,8 @@ describe("MapClaims", function() {
     });
 
     it("split assign mapping long", function() {
+        // The first assignment should suck up all leading elements
+        // Due to ldap mapping
         const source = {
             spla: "fee;foo;bar;baz"
         };
