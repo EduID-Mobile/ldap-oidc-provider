@@ -1,5 +1,6 @@
 "use strict";
-// const debug = require("debug")("test");
+const debug = require("debug")("ldap-oidc:map-claims");
+
 /**
  * mapClaims() uses a mapping and a source data set to transposes it into the
  * target structure. This function just returns what it finds in the LDAP
@@ -18,6 +19,7 @@
  */
 
 function valueSplit(arr, sep) {
+    debug("called valueSplit");
     if (typeof arr === "string") {
         return arr.split(sep);
     }

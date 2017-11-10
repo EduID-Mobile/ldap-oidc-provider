@@ -1,8 +1,15 @@
 "use strict";
 
 /* eslint-disable */
-process.env["DEBUG"] = "test";
-const debug = require("debug")("test");
+const Debug = require("debug");
+
+// show just the test debugging messages
+// Debug.enable("ldap-oidc:test");
+
+// show all internal debugging messages
+// Debug.enable("ldap-oidc:*,oidc-provider:*");
+
+const debug = Debug("ldap-oidc:test");
 
 const { expect } = require("chai");
 
