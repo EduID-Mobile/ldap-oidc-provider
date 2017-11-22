@@ -39,6 +39,7 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
             debug("client not found");
             ctx.throw(new InvalidRequestError("invalid assertion client"));
         }
+
         return client;
     }
 
@@ -72,6 +73,21 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
         const iss = jwt.payload.iss;
 
         const client = await validateClient(ctx, iss);
+
+        if (!client) {
+            debug("AuthN client not found");
+            ctx.throw(new InvalidRequestError("unknown assertion client"));
+        }
+
+        if (!client.jwks) {
+            debug("AuthN client has no key set");
+            ctx.throw(new InvalidRequestError("bad assertion client"));
+        }
+
+        if (!(client.jwks.keys && client.jwks.keys.length)) {
+            debug("AuthN client has no keys");
+            ctx.throw(new InvalidRequestError("bad assertion client"));
+        }
 
         debug(`kid == ${kid}`);
         debug("client %O", client);
