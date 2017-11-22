@@ -10,15 +10,15 @@ const JWT = require("oidc-provider/lib/helpers/jwt");
 const { JWK: { asKeyStore } } = require("node-jose");
 
 module.exports = function factory(provider, settings) { // eslint-disable-line
-    async function validateJwtWithKey(ctx, jwt, jwks) {
+    async function validateJwtWithKey(ctx, jwt, jwk) {
         debug("validate JWT with a Key");
-        if (!jwks) {
+        if (!jwk) {
             debug("no key to validate");
             ctx.throw(new InvalidRequestError("invalid assertion"));
         }
 
         try {
-            const keyStore = await asKeyStore(jwks);
+            const keyStore = await asKeyStore(jwk);
 
             const isValid = await JWT.verify(jwt, keyStore);
 
@@ -92,7 +92,14 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
         debug(`kid == ${kid}`);
         debug("client %O", client);
 
-        await validateJwtWithKey(ctx, jwt, client.jwks.keys[kid]);
+        let key = client.jwks.keys.find((k) => k.kid === kid);
+
+        if (!key) {
+            debug("Cannot find key for ${kid}");
+            ctx.throw(new InvalidRequestError("bad assertion client key"));
+        }
+
+        await validateJwtWithKey(ctx, jwt, key);
     }
 
     return async function validateJWT(ctx, next) {
