@@ -27,7 +27,7 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
             }
         }
         catch (err) {
-            debug("invalid assertion signature");
+            debug("invalid assertion signature %O", err);
             ctx.throw(new InvalidRequestError("invalid assertion"));
         }
     }
