@@ -114,6 +114,47 @@ describe("Assertion Token", function () {
 
         // debug(client);
         cliDb.upsert(clientId, client);
+
+        // insert the user
+        const userDb  = settings.adapter("Account");
+
+        const user = {
+            "sub": "1234567890",
+            "login": "phish",
+            "password": "foobar",
+            "mail": "phish@example.com",
+        };
+
+        userDb.upsert(user.sub, user);
+    });
+
+    it("verify user account", async function() {
+        const userDb  = settings.adapter("Account");
+
+        let user;
+
+        user = await userDb.find("1234567890");
+
+        debug("find by id user %O", user);
+
+        expect(user).to.be.an.object;
+        expect(user.sub).to.be.equal("1234567890");
+        expect(user.mail).to.be.equal("phish@example.com");
+
+        user = await userDb.findByLogin("phish");
+
+        debug("find by login user %O", user);
+        expect(user).to.be.an.array;
+        expect(user).to.have.length(1);
+        expect(user[0].sub).to.be.equal("1234567890");
+        expect(user[0].mail).to.be.equal("phish@example.com");
+
+        user = await userDb.findAndBind("phish", "foobar");
+
+        debug("authenticated user %O", user);
+        expect(user).to.be.an.array;
+        expect(user[0].sub).to.be.equal("1234567890");
+        expect(user[0].mail).to.be.equal("phish@example.com");
     });
 
     it("jwt", async function() {
@@ -182,7 +223,8 @@ describe("Assertion Token", function () {
 
         const assertion = await signToken({
             iss: clientId,
-            aud: "http://localhost:3000/token"
+            aud: "http://localhost:3000/token",
+            sub: "phish",
         }, jwks.keys.keys[0]);
 
         // debug(assertion);
