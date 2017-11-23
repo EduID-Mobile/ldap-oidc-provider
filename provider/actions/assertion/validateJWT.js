@@ -7,11 +7,16 @@ const debug = Debug("ldap-oidc:jwt-assertion");
 
 const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
 const JWT = require("oidc-provider/lib/helpers/jwt");
-const { JWK: { asKeyStore } } = require("node-jose");
+const {
+    JWK: { asKeyStore, isKeyStore },
+    JWS: { createSign, createVerify },
+    // JWE: { createEncrypt, createDecrypt },
+ } = require("node-jose");
 
 module.exports = function factory(provider, settings) { // eslint-disable-line
     async function validateJwtWithKey(ctx, jwt, jwks) {
         debug("validate JWT with a Key");
+
         if (!jwks) {
             debug("no key to validate");
             ctx.throw(new InvalidRequestError("invalid assertion"));
@@ -20,7 +25,8 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
         try {
             const keyStore = await asKeyStore(jwks);
 
-            const isValid = await JWT.verify(jwt, keyStore);
+            // const isValid = await JWT.verify(jwt, keyStore, {});
+            const isValid = await createVerify(keyStore).verify(jwt);
 
             if (!isValid) {
                 throw "no validated";
@@ -99,7 +105,7 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
             ctx.throw(new InvalidRequestError("bad assertion client key"));
         }
 
-        await validateJwtWithKey(ctx, jwt, {"keys": [key]});
+        await validateJwtWithKey(ctx, jwt, [key]);
     }
 
     return async function validateJWT(ctx, next) {
