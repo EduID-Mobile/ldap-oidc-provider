@@ -3,7 +3,7 @@
 const log = require("debug")("ldap-oidc:adapter-factory");
 const RedisAdapter   = require("./eduidRedis");
 const LdapAdapter    = require("./ldap");
-const MemoryAdapter  = require("oidc-provider/lib/adapters/memory_adapter.js");
+const MemoryAdapter  = require("./memory");
 const getMapping = require("../mapping");
 
 const LdapManager = require("./ldapmanager");
@@ -37,13 +37,13 @@ module.exports = function AdapterFactory(cfg) {
 
         if (cfg.memory_db &&
             cfg.memory_db.organization &&
-            cfg.memory_db.organization.indexOf(name)) {
+            cfg.memory_db.organization.indexOf(name) >= 0) {
             // memory_db is for testing only
             return new MemoryAdapter(name);
         }
 
         // handle everything else via Redis
-        { log("handle via redis"); }
+        log("handle via redis");
         return new RedisAdapter(name, cfg);
     };
 };
