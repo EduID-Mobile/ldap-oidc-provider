@@ -22,7 +22,7 @@
  * Proxy apps access this feature through the trust agent.
  */
 
-const debug = require("debug")("ldap-oidc:jwt-assertion");
+const debug = require("debug")("ldap-oidc:jwt-assertion-grant-access");
 // const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
 // const instance = require("oidc-provider/lib/helpers/weak_cache");
 

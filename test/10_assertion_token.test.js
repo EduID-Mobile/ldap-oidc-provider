@@ -10,6 +10,8 @@ const debug = Debug("ldap-oidc:test");
 const ld = require("lodash");
 const url = require("url");
 const chai = require("chai");
+const jose = require("node-jose");
+
 const chaihttp = require("chai-http");
 const kl = require("../provider/helper/keyloader");
 
@@ -135,7 +137,7 @@ describe("Assertion Token", function () {
 
         user = await userDb.find("1234567890");
 
-        debug("find by id user %O", user);
+        // debug("find by id user %O", user);
 
         expect(user).to.be.an.object;
         expect(user.sub).to.be.equal("1234567890");
@@ -143,7 +145,7 @@ describe("Assertion Token", function () {
 
         user = await userDb.findByLogin("phish");
 
-        debug("find by login user %O", user);
+        // debug("find by login user %O", user);
         expect(user).to.be.an.array;
         expect(user).to.have.length(1);
         expect(user[0].sub).to.be.equal("1234567890");
@@ -151,7 +153,7 @@ describe("Assertion Token", function () {
 
         user = await userDb.findAndBind("phish", "foobar");
 
-        debug("authenticated user %O", user);
+        // debug("authenticated user %O", user);
         expect(user).to.be.an.array;
         expect(user[0].sub).to.be.equal("1234567890");
         expect(user[0].mail).to.be.equal("phish@example.com");
@@ -216,15 +218,33 @@ describe("Assertion Token", function () {
 
     });
 
+// TODO: assertion without cnf
+// TODO: assertion with missing claims
+// TODO: assertion without cnf.jwk.kid
+// TODO: Assertion without cnf.jwk
+
     it("post assertion with client auth signed assertion", async function() {
+        this.timeout(8000);
+
         const connection = chai.request(tEP_host);
+        const type = "RSA";
+        const size = 2048;
+        const keystore = jose.JWK.createKeyStore();
 
         let result;
 
+        // create a temporary cnf key
+        const cnfKey = await keystore.generate(type, size);
+
+        debug("%O", cnfKey.toJSON());
+
         const assertion = await signToken({
             iss: clientId,
-            aud: "http://localhost:3000/token",
+            aud: "http://localhost:3000",
             sub: "phish",
+            cnf: {
+                jwk: cnfKey.toJSON(),
+            }
         }, jwks.keys.keys[0]);
 
         // debug(assertion);
@@ -241,14 +261,14 @@ describe("Assertion Token", function () {
         }
         catch (err) {
             // console.log(err);
-            expect(err).to.be.null;
-            // expect(err.response).to.have.status(400);
+            debug("error %O", err.response.text);
+            expect(err.response).to.have.status(400);
             // expect(err.response).to.be.json;
             // expect(err.response.body.error_detail).to.be.equal("invalid assertion provided");
         }
         // console.log(result);
         // expect(result).to.be.undefined;
-        expect(result).to.have.status(200);
+        // expect(result).to.have.status(200);
     });
 
     it("post assertion with client auth and encrypted assertion", async function() {
@@ -258,7 +278,7 @@ describe("Assertion Token", function () {
 
         const assertPayload = await signToken({
             iss: clientId,
-            aud: "http://localhost:3000/token"
+            aud: "http://localhost:3000"
         }, jwks.keys.keys[0]);
 
         const assertion = await encryptToken(assertPayload, enckey);
@@ -277,14 +297,14 @@ describe("Assertion Token", function () {
         }
         catch (err) {
             // debug(err);
-            expect(err).to.be.null;
-            // expect(err.response).to.have.status(400);
+            // expect(err).to.be.null;
+            expect(err.response).to.have.status(400);
             // expect(err.response).to.be.json;
             // expect(err.response.body.error_detail).to.be.equal("invalid assertion audience");
         }
-        debug(result);
-        // expect(result).to.be.undefined;
-        expect(result).to.have.status(200);
+        // debug(result);
+        // // expect(result).to.be.undefined;
+        // expect(result).to.have.status(200);
     });
 
     it("post assertion with client auth and encrypted assertion for different audience", async function() {
@@ -294,7 +314,7 @@ describe("Assertion Token", function () {
 
         const assertPayload = await signToken({
             iss: clientId,
-            aud: "http://localhost:3000/token"
+            aud: "http://localhost:3000"
         }, jwks.keys.keys[0]);
 
         const assertion = await encryptToken(assertPayload, jwks.keys.keys[0]);

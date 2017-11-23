@@ -1,7 +1,7 @@
 "use strict";
 
 const ld = require("lodash");
-const debug = require("debug")("ldap-oidc:jwt-assertion");
+const debug = require("debug")("ldap-oidc:jwt-assertion-parameter-check");
 const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
 // const instance = require("oidc-provider/lib/helpers/weak_cache");
 

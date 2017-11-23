@@ -1,6 +1,6 @@
 "use strict";
 
-const debug = require("debug")("ldap-oidc:jwt-assertion");
+const debug = require("debug")("ldap-oidc:jwt-assertion-authz");
 const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
 const JWT = require("oidc-provider/lib/helpers/jwt");
 

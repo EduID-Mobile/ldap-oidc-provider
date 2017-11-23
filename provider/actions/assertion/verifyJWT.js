@@ -1,6 +1,6 @@
 "use strict";
 
-const debug = require("debug")("ldap-oidc:jwt-assertion");
+const debug = require("debug")("ldap-oidc:jwt-assertion-verify");
 const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
 const JWT = require("oidc-provider/lib/helpers/jwt");
 
@@ -11,8 +11,8 @@ module.exports = function factory() {
 
         let decoded;
 
-        debug("%O", jwt);
-        debug(jwt.split(".").length);
+        debug("jwt %O", jwt);
+        // debug(jwt.split(".").length);
 
         if (jwt.split(".").length === 3) {
             // case 1: compact serialization
@@ -25,7 +25,7 @@ module.exports = function factory() {
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
 
-            debug("%O", decoded);
+            debug("decoded %O", decoded);
         }
         else {
             try {
@@ -84,7 +84,7 @@ module.exports = function factory() {
         const now = Date.now() / 1000;
         const old = now - 1800; // 30 min is max, should be configurable
 
-        debug(`now (${now}) vs. old (${old})`);
+        // debug(`now (${now}) vs. old (${old})`);
 
         if (decoded.payload.iat) {
             if (isNaN(decoded.payload.iat) ||
@@ -99,7 +99,7 @@ module.exports = function factory() {
             }
 
             if (!decoded.payload.exp &&
-                parseInt(decoded.payload.iat) >= old) {
+                parseInt(decoded.payload.iat) <= old) {
                 debug("outdated iat claim");
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
@@ -139,6 +139,7 @@ module.exports = function factory() {
 
         // TODO verify aud points to the token endpoint
 
+        ctx.oidc.assertion_grant.jwt = jwt;
         ctx.oidc.assertion_grant.payload = decoded;
         ctx.oidc.assertion_grant.body = decoded.payload;
 

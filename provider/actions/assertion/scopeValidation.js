@@ -1,6 +1,6 @@
 "use strict";
 
-const debug = require("debug")("ldap-oidc:jwt-assertion");
+const debug = require("debug")("ldap-oidc:jwt-assertion-scope-validation");
 const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
 
 module.exports = function factory(provider) { // eslint-disable-line

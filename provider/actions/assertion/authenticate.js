@@ -1,6 +1,6 @@
 "use strict";
 
-const debug = require("debug")("ldap-oidc:jwt-assertion");
+const debug = require("debug")("ldap-oidc:jwt-assertion-authn");
 const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
 const JWT = require("oidc-provider/lib/helpers/jwt");
 
@@ -12,10 +12,14 @@ module.exports = function factory(provider, settings) {
             const claims = ctx.oidc.assertion_grant.body;
             const now = Date.now();
 
+            // debug("%O", claims);
+            // debug("%O", claims.cnf);
+            // debug(typeof claims.cnf.jwk);
+
             ctx.oidc.assertion_grant.useJwk = false;
 
             // verify a cnf key is present
-            if (!(claims.cnf && typeof claims.cnf.jwk !== "object")) {
+            if (!(claims.cnf && typeof claims.cnf.jwk === "object")) {
                 debug("cnf key is incomplete");
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
