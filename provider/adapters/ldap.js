@@ -134,6 +134,76 @@ class LdapClientAdapter {
         return this.mergeClaims(result, subclaims.reduce((l, c) => l.concat(c), []));
     }
 
+    async findByKey(value, key) {
+        if (!(typeof key === "string" && key.length)){
+            throw new Error("Missing key");
+        }
+
+        if (!(typeof value === "string" && value.length)){
+            throw new Error("Missing value");
+        }
+
+        let filter = ["&", [`${key}=${value}`]];
+
+        if (this.org.class) {
+            filter = filter.concat([`objectClass=${this.org.class}`]);
+        }
+
+        if (this.org.filter) {
+            filter = filter.concat(this.org.filter);
+        }
+
+        log(`filter is ${filter}`);
+
+        let scope = "sub";
+
+        if (this.org.scope) {
+            scope = this.org.scope;
+        }
+
+        return this.ldap.find(filter, this.org.base, scope);
+    }
+
+    async findByLogin(login) {
+        const accountField = this.org.bind || this.org.id;
+
+        return this.findByKey(login, accountField);
+    }
+
+    async findAndBind(login, credentials) {
+        if (!(typeof login === "string" && login.length)){
+            throw new Error("Missing login");
+        }
+
+        if (!(typeof credentials === "string" && credentials.length)){
+            throw new Error("Missing credentials");
+        }
+
+        const accountField = this.org.bind || this.org.id;
+
+        let filter = ["&", [`${accountField}=${login}`]];
+
+        if (this.org.class) {
+            filter = filter.concat([`objectClass=${this.org.class}`]);
+        }
+
+        if (this.org.filter) {
+            filter = filter.concat(this.org.filter);
+        }
+
+        log(`filter is ${filter}`);
+
+        let scope = "sub";
+
+        if (this.org.scope) {
+            scope = this.org.scope;
+        }
+
+        const connection = this.ldap.findAndBind(filter, credentials, scope);
+
+        return connection.findBase();
+    }
+
     mergeClaims(result, subClaims) {
         const final = subClaims.reduce((acc, val) => {
             if (val === null) {
