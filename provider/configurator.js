@@ -193,41 +193,21 @@ class Configurator {
             return new Account(userData, userid);
         }
 
-        debug("account not found");
-        return null;
+        throw new Error("account not found");
     }
 
     async accountByLogin(login, pwd) {
-        const ldap = findConnection(instanceConfig)(this.accountInfo.source);
-        const accountField = this.accountInfo.bind || this.accountInfo.id;
+        const userAdapter = this.adapter("Account");
 
-        let accountFilter = ["&", [`objectClass=${this.accountInfo.class}`], [`${accountField}=${login}`]];
+        const userData = await userAdapter.findAndBind(login, pwd);
 
-        debug("find an account by login infomration");
+        if (userData && userData.lenth) {
+            debug("initialize the account");
 
-        if (this.accountInfo.filter) {
-            accountFilter = accountFilter.concat(this.accountInfo.filter);
+            return this.accountById(userData[0][this.accountInfo.id]);
         }
 
-        const accountScope = this.accountInfo.scope || "sub";
-
-        debug(`find user with scope ${accountScope}`);
-
-        const connection = await ldap.findAndBind(accountFilter, pwd, accountScope);
-
-        if (!connection) {
-            return null;
-        }
-
-        const uInfo = await connection.findBase();
-
-        if (!(uInfo && uInfo.length)) {
-            debug("no user found");
-            return null;
-        }
-
-        debug("bind user");
-        return this.accountById(uInfo[0][this.accountInfo.id]);
+        throw new Error("Login Failed");
     }
 
     getAcr() {
