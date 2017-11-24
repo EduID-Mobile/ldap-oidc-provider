@@ -49,7 +49,7 @@ module.exports = function factory(provider) {
             if (at) {
                 debug("store access token %O");
                 try {
-                    accessToken = await at.save(); // FIXME Crashes! redis kicks in again
+                    accessToken = await at.save();
                 }
                 catch(err){
                     debug("access token not saved %O", err);

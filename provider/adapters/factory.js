@@ -1,6 +1,7 @@
 "use strict";
 
-const log = require("debug")("ldap-oidc:adapter-factory");
+const Debug = require("debug");
+const debug = require("debug")("ldap-oidc:adapter-factory");
 const RedisAdapter   = require("./eduidRedis");
 const LdapAdapter    = require("./ldap");
 const MemoryAdapter  = require("./memory");
@@ -13,7 +14,7 @@ module.exports = function AdapterFactory(cfg) {
     const findConnection = LdapManager(cfg);
 
     return function getAdapter(name) {
-        log(`get adapter for ${name}`);
+        debug(`get adapter for ${name}`);
 
         if (name === "ClientCredentials") {
             // use the same configuration for client and ClientCredentials adapters
@@ -21,7 +22,7 @@ module.exports = function AdapterFactory(cfg) {
         }
 
         if (ldapTypes.indexOf(name) >= 0) {
-            log("handle via LDAP");
+            debug("handle via LDAP");
             const adapter = new LdapAdapter(name);
 
             const org = cfg.ldap.organization[name];
@@ -39,12 +40,12 @@ module.exports = function AdapterFactory(cfg) {
             cfg.memory_db.organization &&
             cfg.memory_db.organization.indexOf(name) >= 0) {
             // memory_db is for testing only
-            log("handle via memory");
+            debug("handle via memory");
             return new MemoryAdapter(name);
         }
 
         // handle everything else via Redis
-        log("handle via redis");
+        debug(`handle ${name} via redis`);
         return new RedisAdapter(name, cfg);
     };
 };

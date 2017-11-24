@@ -1,7 +1,7 @@
 {
     "memory_db": {
         "organization": [
-            "Account", "Client", "ClientCredentials", "Token", "Session",
+            "Account", "Client", "ClientCredentials", "Token", "AccessToken", "Session",
             "AuthorizationCode", "RefreshToken", "InitialAccessToken",
             "RegistrationAccessToken", "ConfirmationKeys"
         ]

@@ -12,6 +12,8 @@ const url = require("url");
 const chai = require("chai");
 const jose = require("node-jose");
 
+const { encode, decode } = require("base64url");
+
 const chaihttp = require("chai-http");
 const kl = require("../provider/helper/keyloader");
 
@@ -263,13 +265,32 @@ describe("Assertion Token", function () {
         catch (err) {
             // console.log(err);
             debug("error %O", err.response.text);
-            expect(err.response).to.have.status(400);
+            // expect(err.response).to.have.not.status(400);
             // expect(err.response).to.be.json;
             // expect(err.response.body.error_detail).to.be.equal("invalid assertion provided");
         }
-        // console.log(result);
-        // expect(result).to.be.undefined;
-        // expect(result).to.have.status(200);
+        // debug(result.body.id_token.split(".").length);
+
+        expect(result).to.be.defined;
+        expect(result).to.have.status(200);
+        expect(result).to.be.json;
+
+        // A RFC7800-client can silently ignore the access and refresh token
+        // unless we want to log the user out.
+        expect(result.body).to.have.keys("access_token",
+                                         "id_token",
+                                         "refresh_token",
+                                         "token_type",
+                                         "expires_in");
+
+        // verify the contents of the id token
+        // Because we just requested the openid scope, we will receive ONLY
+        // the sub of the authorization
+        const idToken = JSON.parse(decode(result.body.id_token.split(".")[1]));
+
+        expect(idToken).to.be.defined;
+        expect(idToken.sub).to.be.defined;
+        expect(idToken.sub).to.be.equal("1234567890");
     });
 
     it("post assertion with client auth and encrypted assertion", async function() {
