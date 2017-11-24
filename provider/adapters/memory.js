@@ -87,6 +87,12 @@ class MemoryAdapter {
     static connect(provider) { // eslint-disable-line no-unused-vars
     // noop
     }
+
+    async objects() {
+        const regex = new RegExp(`^${this.name}:.*$`);
+
+        return Promise.all(storage.keys().filter((k) => regex.test(k)).map((k) => storage.get(k)));
+    }
 }
 
 module.exports = MemoryAdapter;

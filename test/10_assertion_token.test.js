@@ -245,6 +245,7 @@ describe("Assertion Token", function () {
             aud: "http://localhost:3000",
             sub: "phish",
             x_crd: "foobar",
+            azp: "0",
             cnf: {
                 jwk: cnfKey.toJSON(),
             }
@@ -314,6 +315,7 @@ describe("Assertion Token", function () {
             aud: "http://localhost:3000",
             sub: "phish",
             x_crd: "foobar",
+            azp: "1",
             cnf: {
                 jwk: cnfKey.toJSON(),
             }
@@ -362,6 +364,27 @@ describe("Assertion Token", function () {
         expect(idToken.sub).to.be.defined;
         expect(idToken.sub).to.be.equal("1234567890");
     });
+
+
+    it("check ConfirmationKeys", async function() {
+        const cnfDb  = settings.adapter("ConfirmationKeys");
+
+        expect(cnfDb).to.be.defined;
+
+        const result = await cnfDb.objects();
+
+        debug("%O", result);
+        expect(result).to.have.lengthOf(2);
+
+            // the keys are in reverse order in the cache.
+        expect(result[0].azp).to.be.equal("1");
+        expect(result[1].azp).to.be.equal("0");
+        expect(result[0].sub).to.be.equal("1234567890");
+        expect(result[1].sub).to.be.equal("1234567890");
+        expect(result[0].iss).to.be.equal(clientId);
+        expect(result[1].iss).to.be.equal(clientId);
+    });
+
 
     it("post assertion with client auth and encrypted assertion for different audience", async function() {
         const connection = chai.request(tEP_host);

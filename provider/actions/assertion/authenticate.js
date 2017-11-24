@@ -57,12 +57,13 @@ module.exports = function factory(provider, settings) {
                 debug("complete request ... %O", ctx.oidc.assertion_grant.sub);
             }
 
+            // NOTE: the sessionInfo.sub should point to the accountID not the loginname
             const sessionInfo = {
                 azp: claims.azp,
                 kid: claims.cnf.jwk.kid,
                 key: claims.cnf.jwk,
                 iss: claims.iss,
-                sub: claims.sub,
+                sub: ctx.oidc.assertion_grant.sub.userClaims.sub,
                 auth_time: now
             };
 
