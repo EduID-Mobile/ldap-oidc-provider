@@ -2,7 +2,7 @@
 
 const debug = require("debug")("ldap-oidc:jwt-assertion-authn");
 const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
-const JWT = require("oidc-provider/lib/helpers/jwt");
+// const JWT = require("oidc-provider/lib/helpers/jwt");
 
 module.exports = function factory(provider, settings) {
     return async function authenticate(ctx, next) {
