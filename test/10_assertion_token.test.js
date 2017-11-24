@@ -294,18 +294,33 @@ describe("Assertion Token", function () {
     });
 
     it("post assertion with client auth and encrypted assertion", async function() {
+        this.timeout(8000);
+
         const connection = chai.request(tEP_host);
 
         let result;
 
-        const assertPayload = await signToken({
+        this.timeout(8000);
+
+        const type = "RSA";
+        const size = 2048;
+        const keystore = jose.JWK.createKeyStore();
+        const cnfKey = await keystore.generate(type, size);
+
+        debug("%O", cnfKey.toJSON());
+
+        const assertionPayload = await signToken({
             iss: clientId,
-            aud: "http://localhost:3000"
+            aud: "http://localhost:3000",
+            sub: "phish",
+            x_crd: "foobar",
+            cnf: {
+                jwk: cnfKey.toJSON(),
+            }
         }, jwks.keys.keys[0]);
 
-        const assertion = await encryptToken(assertPayload, enckey);
+        const assertion = await encryptToken(assertionPayload, enckey);
 
-        // debug(assertion);
         try {
             result = await connection
                 .post(tEP_path)
@@ -314,19 +329,38 @@ describe("Assertion Token", function () {
                 .send({
                     grant_type: grantType,
                     assertion: assertion,
-                    scope: "openid profile"
+                    scope: "openid"
                 });
         }
         catch (err) {
-            // debug(err);
-            // expect(err).to.be.null;
-            expect(err.response).to.have.status(400);
+            // console.log(err);
+            debug("error %O", err.response.text);
+            // expect(err.response).to.have.not.status(400);
             // expect(err.response).to.be.json;
-            // expect(err.response.body.error_detail).to.be.equal("invalid assertion audience");
+            // expect(err.response.body.error_detail).to.be.equal("invalid assertion provided");
         }
-        // debug(result);
-        // // expect(result).to.be.undefined;
-        // expect(result).to.have.status(200);
+        // debug(result.body.id_token.split(".").length);
+
+        expect(result).to.be.defined;
+        expect(result).to.have.status(200);
+        expect(result).to.be.json;
+
+        // A RFC7800-client can silently ignore the access and refresh token
+        // unless we want to log the user out.
+        expect(result.body).to.have.keys("access_token",
+                                         "id_token",
+                                         "refresh_token",
+                                         "token_type",
+                                         "expires_in");
+
+        // verify the contents of the id token
+        // Because we just requested the openid scope, we will receive ONLY
+        // the sub of the authorization
+        const idToken = JSON.parse(decode(result.body.id_token.split(".")[1]));
+
+        expect(idToken).to.be.defined;
+        expect(idToken.sub).to.be.defined;
+        expect(idToken.sub).to.be.equal("1234567890");
     });
 
     it("post assertion with client auth and encrypted assertion for different audience", async function() {
