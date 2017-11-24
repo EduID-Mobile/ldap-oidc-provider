@@ -6,6 +6,7 @@ const JWT = require("oidc-provider/lib/helpers/jwt");
 
 module.exports = function factory(provider, settings) { // eslint-disable-line
     return async function authorize(ctx, next) {
+        debug("authorize if necessary");
         if (ctx.oidc.assertion_grant.authz) {
             debug("authorize");
 

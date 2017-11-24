@@ -1,8 +1,9 @@
+"use strict";
 /**
  * MemoryAdapter stolen from node-oidc-provider.
  * extended by findLogin() and bindLogin()
  */
-
+const debug = require("debug")("ldap-oidc:memory_db");
 const LRU = require("lru-cache");
 const epochTime = require("oidc-provider/lib/helpers/epoch_time");
 
@@ -41,23 +42,24 @@ class MemoryAdapter {
         return Promise.resolve();
     }
 
-    findByKey(value, key) {
+    async findByKey(value, key) {
         if (!(key && value && key.length && value.length)) {
-            return Promise.reject("Missing Key or Value");
+            throw new Error("Missing Key or Value");
         }
-        return Promise.resolve([storage.values().find((object) => object[key] === value)]);
+        return [storage.values().find((object) => object[key] === value)];
     }
 
-    findByLogin(login) {
+    async findByLogin(login) {
         return this.findByKey(login, "login");
     }
 
-    findAndBind(login, credentials) {
-        return Promise.resolve([storage.values().find((object) => object["login"] === login && object["password"] === credentials)]);
+    async findAndBind(login, credentials) {
+        debug("find and bind");
+        return [storage.values().find((object) => object["login"] === login && object["password"] === credentials)];
     }
 
-    find(id) {
-        return Promise.resolve(storage.get(this.key(id)));
+    async find(id) {
+        return storage.get(this.key(id));
     }
 
     upsert(id, payload, expiresIn) {

@@ -23,7 +23,7 @@
  */
 
 const debug = require("debug")("ldap-oidc:jwt-assertion-grant-access");
-// const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
+const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
 // const instance = require("oidc-provider/lib/helpers/weak_cache");
 
 module.exports = function factory(provider) {
@@ -38,6 +38,7 @@ module.exports = function factory(provider) {
         let accessToken;
 
         if (!ctx.oidc.assertion_grant.useJwt) {
+            debug("grant new access token");
             const at = new AccessToken({
                 accountId: account.accountId, // becomes sub
                 clientId: ctx.oidc.client.clientId, // becomes aud
@@ -45,15 +46,31 @@ module.exports = function factory(provider) {
                 scope: ctx.oidc.params.scope        // scope passed via parameters
             });
 
-            accessToken = await at.save();
+            if (at) {
+                debug("store access token %O");
+                try {
+                    accessToken = await at.save(); // FIXME Crashes! redis kicks in again
+                }
+                catch(err){
+                    debug("access token not saved %O", err);
+                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
+                }
+            }
+            else {
+                debug("no access token instantiated");
+                ctx.throw(new InvalidRequestError("invalid assertion provided"));
+            }
+            debug("access token complete");
         }
         else {
+            debug("reuse provided access token?");
             accessToken = ctx.oidc.assertion_grant.body.x_jwt;
         }
 
         const expiresIn = AccessToken.expiresIn;
         const nonce = String(Math.random());
 
+        debug("grantTypes: %O", ctx.oidc.client.grantTypes);
         const grantPresent = ctx.oidc.client.grantTypes.includes("refresh_token");
 
         // offline access is implied with assertions, since no direct interaction
@@ -61,6 +78,7 @@ module.exports = function factory(provider) {
         // Offline access is only excluded, if the RP does not support it.
 
         if (grantPresent) {
+            debug("grand refresh token based on client configuration");
             const rt = new RefreshToken({
                 accountId: account.accountId,
                 // acr: ctx.oidc.assertion_grant.acr,
@@ -78,7 +96,7 @@ module.exports = function factory(provider) {
 
         // verify that an id token is actually requested. Currently we always issue
         // the id_token
-
+        debug("create ID-Token");
         const token = new IdToken(Object.assign({}, await Promise.resolve(account.claims()), {
             // acr: ctx.oidc.assertion_grant.acr,
             // amr: ctx.oidc.assertion_grant.amr,
@@ -92,7 +110,7 @@ module.exports = function factory(provider) {
 
         // Back channel logout is unclear in many aspects, so sessions are not supported.
         // token.set("sid", ctx.oidc.assertion_grant.sid);
-
+        debug("prepare final response");
         ctx.body = {
             access_token: accessToken,
             expires_in: expiresIn,
@@ -100,14 +118,17 @@ module.exports = function factory(provider) {
         };
 
         if (refreshToken) {
+            debug("add refresh token verifier");
             token.set("rt_hash", refreshToken);
             ctx.body.refresh_token = refreshToken;
         }
 
         if (token) {
+            debug("sign and add ID-Token");
             ctx.body.id_token = await token.sign(ctx.oidc.client);
         }
 
+        debug("complete request");
         await next();
     };
 };

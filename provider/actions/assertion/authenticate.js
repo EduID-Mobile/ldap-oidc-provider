@@ -29,73 +29,33 @@ module.exports = function factory(provider, settings) {
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
 
-            if (claims.x_jwt) {
-                let decoded;
+            if (claims.x_crd) {
+                if (typeof claims.x_crd !== "string") {
+                    debug("invalid x_crd claim for password authentication");
+                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
+                }
+
+                const sub = claims.sub;
+                const pwd = claims.x_crd;
+
+                debug("try to login %s, %s", sub, pwd);
+                // debug("settings %O", settings.accountByLogin.toString());
 
                 try {
-                    decoded = JWT.decode(claims.x_jwt);
+                    const user = await settings.accountByLogin(sub, pwd);
+
+                    if (!user) {
+                        throw "no user";
+                    }
+
+                    ctx.oidc.assertion_grant.sub = user;
                 }
                 catch (error) {
-                    debug("x_jwt claim is an invalid compact serialization");
+                    debug("authentication failed %O", error);
                     ctx.throw(new InvalidRequestError("invalid assertion provided"));
                 }
-
-                if (!decoded) {
-                    debug("x_jwt claim is invalid");
-                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                }
-
-                // - verify that x_jwt is an access token from here.
-                if (claims.iss !== decoded.payload.aud) {
-                    debug("x_jwt mismatches the iss claim");
-                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                }
-
-                if (claims.sub !== decoded.payload.sub) {
-                    debug("x_jwt mismatches the sub claim");
-                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                }
-
-                if (claims.aud !== decoded.payload.iss) {
-                    debug("x_jwt mismatches the iss claim");
-                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                }
-                ctx.oidc.assertion_grant.useJwk = true;
+                debug("complete request ... %O", ctx.oidc.assertion_grant.sub);
             }
-
-            if (claims.x_crd) {
-                if (!claims.x_jwt) {
-                    if (typeof claims.x_crd !== "string") {
-                        debug("invalid x_crd claim for password authentication");
-                        ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                    }
-
-                    // if x_crd is present without a jwt try to login the sub using x_crd as password
-                    const sub = claims.sub;
-                    const pwd = claims.x_crd;
-
-                    try {
-                        const user = await settings.accountByLogin(sub, pwd);
-
-                        if (!user) {
-                            throw "no user";
-                        }
-
-                        ctx.oidc.assertion_grant.sub = user;
-                    }
-                    catch (error) {
-                        debug("authentication failed");
-                        ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                    }
-                }
-                // else {
-                    // NOTE: multi-factor authentication can be included here
-                    // NOTE: multi-factor information could be send via
-                    //       push notification to trust agent apps
-                // }
-            }
-
-            // FIXME ensure that cnf.typ is conforming JWK.
 
             const sessionInfo = {
                 azp: claims.azp,
@@ -106,6 +66,7 @@ module.exports = function factory(provider, settings) {
                 auth_time: now
             };
 
+            debug("upsert session info %O", sessionInfo);
             await settings.adapter("ConfirmationKeys").upsert(sessionInfo.kid, sessionInfo);
             ctx.oidc.assertion_grant.auth_time = now;
         }

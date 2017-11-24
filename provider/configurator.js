@@ -15,7 +15,7 @@ const jose = require("node-jose");
 const AdapterFactory = require("./adapters/factory.js");
 const KeyLoader = require("./helper/keyloader.js");
 const LoggingFactory = require("./helper/logging.js");
-const findConnection = require("./adapters/ldapmanager.js");
+// const findConnection = require("./adapters/ldapmanager.js");
 const grantTypeFactory = require("./actions");
 
 const compose = require("koa-compose");
@@ -197,12 +197,21 @@ class Configurator {
     }
 
     async accountByLogin(login, pwd) {
+        debug("account by login %s %s", login, pwd);
+
         const userAdapter = this.adapter("Account");
 
+        if (!userAdapter) {
+            throw new Error("missing adapter");
+        }
+
+        debug("find user data via userAdapter");
         const userData = await userAdapter.findAndBind(login, pwd);
 
-        if (userData && userData.lenth) {
-            debug("initialize the account");
+        debug("userData: %O", userData);
+        if (userData && userData.length) {
+
+            debug("initialize the account %s", this.accountInfo.id);
 
             return this.accountById(userData[0][this.accountInfo.id]);
         }
@@ -295,7 +304,7 @@ class Configurator {
 
             Object.keys(instanceConfig.grant_types)
                 .map((gt) => this.provider.registerGrantType(gt,
-                                                             grantTypeFactory(instanceConfig.grant_types[gt].handler),
+                                                             grantTypeFactory(instanceConfig.grant_types[gt].handler, this),
                                                              instanceConfig.grant_types[gt].parameter));
         }
     }
@@ -339,7 +348,10 @@ class Configurator {
     }
 
     get accountInfo() {
-        return instanceConfig.ldap.organization.Account;
+        if (instanceConfig.ldap) {
+            return instanceConfig.ldap.organization.Account;
+        }
+        return { "id": "sub" };
     }
 }
 

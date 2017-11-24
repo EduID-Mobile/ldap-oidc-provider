@@ -39,6 +39,7 @@ module.exports = function AdapterFactory(cfg) {
             cfg.memory_db.organization &&
             cfg.memory_db.organization.indexOf(name) >= 0) {
             // memory_db is for testing only
+            log("handle via memory");
             return new MemoryAdapter(name);
         }
 

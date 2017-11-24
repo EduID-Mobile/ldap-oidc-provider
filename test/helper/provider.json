@@ -3,7 +3,7 @@
         "organization": [
             "Account", "Client", "ClientCredentials", "Token", "Session",
             "AuthorizationCode", "RefreshToken", "InitialAccessToken",
-            "RegistrationAccessToken"
+            "RegistrationAccessToken", "ConfirmationKeys"
         ]
     },
     "urls": {

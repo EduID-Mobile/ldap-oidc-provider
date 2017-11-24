@@ -242,6 +242,7 @@ describe("Assertion Token", function () {
             iss: clientId,
             aud: "http://localhost:3000",
             sub: "phish",
+            x_crd: "foobar",
             cnf: {
                 jwk: cnfKey.toJSON(),
             }
