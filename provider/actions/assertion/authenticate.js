@@ -20,7 +20,7 @@ module.exports = function factory(provider, settings) {
 
             // verify a cnf key is present
             if (!(claims.cnf && typeof claims.cnf.jwk === "object")) {
-                debug("cnf key is incomplete");
+                debug("cnf key is incomplete %O", claims);
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
 
