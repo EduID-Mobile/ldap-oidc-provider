@@ -199,7 +199,7 @@ class LdapClientAdapter {
             scope = this.org.scope;
         }
 
-        const connection = this.ldap.findAndBind(filter, credentials, scope);
+        const connection = await this.ldap.findAndBind(filter, credentials, scope);
 
         if (connection) {
             return connection.findBase();
