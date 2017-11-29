@@ -119,6 +119,18 @@ describe("Assertion Token", function () {
         // debug(client);
         cliDb.upsert(clientId, client);
 
+        // insert a dummy client for testing the authorization
+        const clientAuthz = {
+            "client_id": "authzclient",
+            "client_secret": "test1234",
+            "grant_types": ["refresh_token", "authorization_code", grantType],
+            "redirect_uris": ["http://foobar.com:3001"],
+            "jwks": jwks.keys
+        };
+
+        // debug(client);
+        cliDb.upsert("authzclient", clientAuthz);
+
         // insert the user
         const userDb  = settings.adapter("Account");
 
@@ -473,5 +485,117 @@ describe("Assertion Token", function () {
 
         }
         expect(result).to.be.undefined;
+    });
+
+    it("authorization", async function() {
+        this.timeout(8000);
+
+        const connection = chai.request(tEP_host);
+
+        let result;
+
+        this.timeout(8000);
+
+        const type = "RSA";
+        const size = 2048;
+        const keystore = jose.JWK.createKeyStore();
+        const cnfKey = await keystore.generate(type, size);
+
+        debug("%O", cnfKey.toJSON());
+
+        const assertionPayload = await signToken({
+            iss: clientId,
+            aud: "http://localhost:3000/",
+            sub: "phish",
+            x_crd: "foobar",
+            azp: "1",
+            cnf: {
+                jwk: cnfKey.toJSON(),
+            }
+        }, jwks.keys.keys[0]);
+
+        const assertion = await encryptToken(assertionPayload, enckey);
+
+        try {
+            result = await connection
+                .post(tEP_path)
+                .auth(clientId, clientPwd)
+                .type("form")
+                .send({
+                    grant_type: grantType,
+                    assertion: assertion,
+                    scope: "openid"
+                });
+        }
+        catch (err) {
+            // console.log(err);
+            debug("error %O", err.response.text);
+            // expect(err.response).to.have.not.status(400);
+            // expect(err.response).to.be.json;
+            // expect(err.response.body.error_detail).to.be.equal("invalid assertion provided");
+        }
+        // debug(result.body.id_token.split(".").length);
+
+        expect(result).to.be.defined;
+        expect(result).to.have.status(200);
+        expect(result).to.be.json;
+
+        // A RFC7800-client can silently ignore the access and refresh token
+        // unless we want to log the user out.
+        expect(result.body).to.have.keys("access_token",
+                                         "id_token",
+                                         "refresh_token",
+                                         "token_type",
+                                         "expires_in");
+
+        const authzCli = "authzclient";
+        const authzPwd = "test1234";
+        const idToken = JSON.parse(decode(result.body.id_token.split(".")[1]));
+
+        const authzAssertionPayload = await signToken({
+            iss: "1",
+            aud: "http://localhost:3000",
+            sub: idToken.sub,
+            azp: "http://foobar.com:3001",
+            cnf: {
+                kid: cnfKey.kid,
+            }
+        }, cnfKey);
+
+        const authzAssertion = await encryptToken(authzAssertionPayload, enckey);
+
+        result = null;
+
+        try {
+            result = await connection
+                .post(tEP_path)
+                .auth(authzCli, authzPwd)
+                .type("form")
+                .send({
+                    grant_type: grantType,
+                    assertion: authzAssertion,
+                    scope: "openid"
+                });
+        }
+        catch (err) {
+            // console.log(err);
+            debug("error %O", err.response.text);
+            // expect(err.response).to.have.not.status(400);
+            // expect(err.response).to.be.json;
+            // expect(err.response.body.error_detail).to.be.equal("invalid assertion provided");
+        }
+        // debug(result.body.id_token.split(".").length);
+
+        expect(result).to.be.defined;
+        expect(result).to.have.status(200);
+        expect(result).to.be.json;
+
+        // A RFC7800-client can silently ignore the access and refresh token
+        // unless we want to log the user out.
+        expect(result.body).to.have.keys("access_token",
+                                         "id_token",
+                                         "refresh_token",
+                                         "token_type",
+                                         "expires_in");
     });
 });

@@ -67,7 +67,7 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
         }
 
         await validateClient(ctx, cnfKey.iss);
-        await validateJwtWithKey(ctx, jwt, cnfKey.key);
+        await validateJwtWithKey(ctx, jwt, [cnfKey.key]);
 
         if (cnfKey.sub !== jwt.payload.sub) {
             debug("mismatching sub entries for assertion and cnf key");

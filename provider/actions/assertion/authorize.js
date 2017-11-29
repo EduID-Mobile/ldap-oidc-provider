@@ -13,13 +13,14 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
             const claims = ctx.oidc.assertion_grant.body;
 
             if (ctx.oidc.client.clientId !== claims.iss) {
-                if (Array.isArray(ctx.oidc.client.redirect_uri) &&
-                   ctx.oidc.client.redirect_uri.indexOf(claims.azp))  {
-                    debug("authorizing client does not match the authorized party");
-                    ctx.throw(new InvalidRequestError("invalid assertion request"));
+                if (Array.isArray(ctx.oidc.client.redirectUris)) {
+                    if(ctx.oidc.client.redirectUris.indexOf(claims.azp) < 0)  {
+                        debug("authorizing client does not match the authorized party");
+                        ctx.throw(new InvalidRequestError("invalid assertion request"));
+                    }
                 }
-                else if (ctx.oidc.client.redirect_uri !== claims.azp) {
-                    debug("authorizing client does not match the authorized party");
+                else if (ctx.oidc.client.redirectUris !== claims.azp) {
+                    debug("authorizing client single does not match the authorized party");
                     ctx.throw(new InvalidRequestError("invalid assertion request"));
                 }
             }
