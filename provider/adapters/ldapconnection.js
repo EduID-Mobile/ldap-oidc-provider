@@ -278,7 +278,7 @@ class LDAPAdapter {
         );
     }
 
-    findBase(baseDN = null) {
+    async findBase(baseDN = null) {
         return this.find([], baseDN, "base");
     }
 

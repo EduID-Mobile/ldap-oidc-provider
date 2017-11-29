@@ -201,7 +201,12 @@ class LdapClientAdapter {
 
         const connection = this.ldap.findAndBind(filter, credentials, scope);
 
-        return connection.findBase();
+        if (connection) {
+            return connection.findBase();
+        }
+
+        log("find and bind returned no connection");
+        return null;
     }
 
     mergeClaims(result, subClaims) {
