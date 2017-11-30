@@ -33,6 +33,12 @@ During the authentication phase the Trust Agent App needs to register its device
 
 [x] 1.1.6 RFC 7521: The token endpoint MUST accept the assertion parameter.
 
+[-] 1.1.7 The RP MUST identify the AP either via unique redirection URLs OR via the AP's public key used for encrypting the assertion.
+
+[-] 1.1.8 The RP SHOULD reject any assertion that exposes an unknown kid in the assertion's header.
+
+[-] 1.1.9 The RP MUST reject any assertion if the AP cannot be identified.
+
 # 1.2 Parameters
 
 [x] 1.2.1 RFC 7800: token request MUST include assertion parameter.
@@ -45,9 +51,9 @@ During the authentication phase the Trust Agent App needs to register its device
 
 # 2 Decrypt assertion
 
-[ ] 2.1 Assertions MUST be encrypted.
+[x] 2.1 Assertions MUST be encrypted. (implemeted as MAY)
 
-[ ] 2.2 Assertions MUST be encrypted for the AP.
+[x] 2.2 Assertions MUST be encrypted for the AP.
 
 # 3.1 verify JWT
 
@@ -69,11 +75,13 @@ During the authentication phase the Trust Agent App needs to register its device
 
 [x] 3.1.9 If the cnf claim holds a kid, then assertion header's kid MUST match it.
 
-[ ] 3.1.10 The assertions payload MAY contain an azp.
+[x] 3.1.10 The assertions payload MUST contain an azp.
 
-[ ] 3.1.11 If azp is present and azp is not matching the assertions issuer, then the issuer MUST be registered for proxy_authorization.
+[ ] 3.1.11 If azp is present and the client ID not equals the assertion's issuer claim, then the azp MUST match one of the client's redirect URIs.
 
-[x] 3.1.12 proxy_authorization SHOULD be granted only to trust agents.
+[ ] 3.1.12 If the client ID matches the assertion's issuer claim and an azp claim is present, then the client MUST be registered for proxy_authorization.
+
+[ ] 3.1.13 proxy_authorization SHOULD be granted only to trust agents.
 
 # 3.2 validate JWT
 
@@ -89,10 +97,6 @@ During the authentication phase the Trust Agent App needs to register its device
 
 [x] 3.2.6 If the cnf claim holds a kid, the the cnf key's iss claim MUST refer to a valid client.
 
-# 3.3 Common x_jwt requirements
-
-[x] 3.3.1 The x_jwt claim MUST be in compact serialization.
-
 # 4.1 Authenticate
 
 [x] 4.1.1 The assertion MUST contain a cnf claim.
@@ -105,62 +109,36 @@ During the authentication phase the Trust Agent App needs to register its device
 
 [ ] 4.1.5 The azp claim MUST contain a unique id for the TA instance.
 
-# 4.2 Authenticate using an access_token (App Auth extension)
+[x] 4.1.6 The assertion MUST NOT include a x_jwt claim.
+
+[x] 4.1.7 The assertion MUST include a x_crd claim.
+
+[x] 4.1.8 The x_crd claim MUST be a string or an object.
+
+[x] 4.1.9 The assertion's sub claim and x_crd claims MUST authenticate a user as specified in the password flow (RFC 6749).
+
+[ ] 4.1.10 The assertion's iss MUST match the request's client ID.
+
+# 4.2 Authorize using an jwt identifier (x_jwt)
 
 [x] 4.2.1 The assertion MUST include a x_jwt claim.
 
-[x] 4.2.2 The x_jwt's iss claim MUST match the assertion's aud claim.
+[ ] 4.2.2 The assertion MUST NOT include a x_crd claim.
 
-[x] 4.2.3 The x_jwt's sub claim MUST match the assertion's sub claim.
+[x] 4.2.3 The assertion MUST contain a cnf claim containing a kid.
 
-[x] 4.2.4 The x_jwt's aud claim MUST match the assertion's iss claim.
+[x] 4.2.4 The asserion's azp claim MUST match a redirectUri of the client making the request.
 
-[ ] 4.2.4 The x_jwt MUST be signed by the AP.
+[x] 4.2.5 The x_jwt MUST contain the iss claim.
 
-[x] 4.2.5 The AP MUST return the x_jwt as access_token.
+[x] 4.2.6 The x_jwt MUST NOT contain the aud claim.
 
-# 4.3 Authenticate using credentials
+[x] 4.2.7 The x_jwt MUST NOT contain the sub claim.
 
-[x] 4.3.1 The assertion MUST NOT include a x_jwt claim.
+[ ] 4.2.8 The x_jwt MUST be signed.
 
-[x] 4.3.2 The assertion MUST include a x_crd claim.
+[ ] 4.2.9 The AP MAY reject x_jwt if it cannot verify the signature.
 
-[x] 4.3.3 The x_crd claim MUST be a string.
+[ ] 4.2.10 The AP MAY accept x_jwt from unknown issuers without verifying the signature.
 
-[x] 4.3.4 The assertion's sub claim and x_crd claims MUST authenticate a user as specified in the password flow (RFC 6749).
-
-# 4.4 proxy authorization (single factor)
-
-[x] 4.4.1 The assertion MUST contain a cnf claim containing a kid.
-
-[x] 4.4.2 The asserion's azp claim MUST match a redirectUri of the client making the request.
-
-[x] 4.4.3 The assertion MUST contain a x_jwt claim.
-
-[ ] 4.4.4 The AP MAY require a x_jwt to be signed.
-
-[x] 4.4.5 The x_jwt MUST contain the iss claim.
-
-[x] 4.4.6 The x_jwt MUST NOT contain the aud claim.
-
-[x] 4.4.7 The x_jwt MUST NOT contain the sub claim.
-
-# 4.5 proxy authorization: verifying signed x_jwt
-
-[ ] 4.5.1 If the x_jwt's iss known to the AP, then it MUST verify the assertion's x_jwt.
-
-[ ] 4.5.2 The AP MAY accept x_jwt from unknown issuers without verifying the signature.
-
-# 4.6 Multi-factor authentication/authorization
-
-[ ] 4.6.1 The assertion MUST include a x_jwt claim.
-
-[ ] 4.6.2 The assertion MUST include a x_crd claim.
-
-[ ] 4.6.3 The x_crd claim MUST be an object.
-
-[ ] 4.6.4 The x_crd claim MUST contain key-value pairs for the different factors.
-
-[ ] 4.6.5 The value of a x_crd pair is defined for each factor, separately.
-
-[ ] 4.6.6 If multi-factor authentication is active the AP MUST reject x_jwt assertion without x_crd.  
+[x] 4.2.11 The x_jwt claim MUST be in compact serialization.

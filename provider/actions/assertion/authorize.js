@@ -4,6 +4,12 @@ const debug = require("debug")("ldap-oidc:jwt-assertion-authz");
 const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
 const JWT = require("oidc-provider/lib/helpers/jwt");
 
+/**
+ * This module is part of the jwt-bearer assertion handling.
+ *
+ * This module handles the authorization of one client for another client.
+ *
+ */
 module.exports = function factory(provider, settings) { // eslint-disable-line
     return async function authorize(ctx, next) {
         debug("authorize if necessary");
@@ -38,16 +44,6 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
 
                 if (!decoded) {
                     debug("x_jwt claim is invalid");
-                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                }
-
-                if (decoded.payload.sub) {
-                    debug("x_jwt.sub claim MUST NOT be present");
-                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                }
-
-                if (decoded.payload.aud) {
-                    debug("x_jwt.aud claim MUST NOT be present");
                     ctx.throw(new InvalidRequestError("invalid assertion provided"));
                 }
 
