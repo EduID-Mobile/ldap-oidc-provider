@@ -29,7 +29,7 @@ async function encryptToken(payload, key) {
     if (typeof payload !== "string") {
         payload = JSON.stringify(payload);
     }
-    return JWT.encrypt(payload,key, "A128GCM","RSA-OAEP" );
+    return JWT.encrypt(payload,key, "A128GCM","RSA-OAEP-256" );
 }
 
 async function signToken(payload, key) {
