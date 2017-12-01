@@ -1,12 +1,7 @@
 "use strict";
 
 const jose = require("node-jose");
-const rsa = require("node-jose/lib/algorithms/rsa-util");
-const fs = require("fs");
-const Debug = require("debug");
-const debug = Debug("key2pem");
-
-// Debug.enable("key2pem");
+const fs   = require("fs");
 
 /**
  * converts a key from a keystore into a PEM
@@ -21,33 +16,27 @@ const debug = Debug("key2pem");
  */
 
 const keyFile =  process.argv[2];
-const keyId = process.argv[3];
+const keyId   = process.argv[3];
 
 async function handleData(data) {
     const keystore = await jose.JWK.asKeyStore(data);
-    let key2;
-
-    debug(keyId);
 
     if (keyId) {
-        debug("with key id " + keyId);
-        key2  = keystore.get(keyId, {kty: "RSA"});
+        return keystore.get(keyId, {kty: "RSA"});
     }
-    else {
-        debug("no key id");
-        key2  = keystore.get({kty: "RSA"});
-    }
-    const pem = rsa.convertToPem(key2.toJSON(), true);
 
-    process.stdout.write(pem);
+    return keystore.get({kty: "RSA"});
 }
 
 fs.readFile(keyFile, function (err, data ) {
     // debug("hello %o", data.toString());
-    if (!err) {
-        handleData(data.toString()).then(() => process.exit(0));
-    }
-    else {
+    if (err) {
         process.exit(1);
     }
+
+    handleData(data.toString())
+        .then((key) => key.toPEM())
+        .then((pem) => process.stdout.write(pem))
+        .then(()    => process.exit(0))
+        .catch(()   => process.exit(1));
 });
