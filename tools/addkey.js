@@ -28,17 +28,7 @@ const jwksfile  = process.argv[3];
 
 var keystore;
 
-if (!keyFile) {
-    keystore = JWK.createKeyStore();
-
-    process.stdout.write(JSON.stringify(keystore.toJSON()));
-    process.exit(0);
-}
-
-async function readKeystore(ks) {
-    keystore = await JWK.asKeyStore(ks);
-}
-
+// This function tries all variations of key formats
 async function readKey(key) {
     try {
         await keystore.add(key);
@@ -90,19 +80,25 @@ function loadKeystore() {
         if (err) {
             process.exit(1);
         }
-
-        readKeystore(data.toString())
+        JWK.asKeyStore(data.toString())
+            .then((ks) => keystore = ks)
             .then(()    => loadKey())
             // .catch((err) => console.log(err))
             .catch(()   => process.exit(1));
     });
 }
 
+// Now comes the actual logic
+if (!keyFile) { // if there is no keyfile, return an empty JWKS
+    keystore = JWK.createKeyStore();
 
-if (jwksfile) {
+    process.stdout.write(JSON.stringify(keystore.toJSON()));
+    process.exit(0);
+}
+else if (jwksfile) { // if there is keyfile and a jwksfile, add the key to it
     loadKeystore();
 }
-else {
+else { // if there is no jwksfile, add the key to a new jwks.
     keystore = JWK.createKeyStore();
     loadKey();
 }
