@@ -1,5 +1,7 @@
 "use strict";
 
+// NOTE USE addkey.js!
+
 /**
  * converts a list of pem keys to a JWKS.
  *
