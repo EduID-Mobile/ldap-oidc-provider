@@ -39,6 +39,20 @@ During the authentication phase the Trust Agent App needs to register its device
 
 [-] 1.1.9 The RP MUST reject any assertion if the AP cannot be identified.
 
+[ ] 1.1.10 RPs MUST accept the assertion grant_types for OAuth2 endpoints without client authentication.
+
+[ ] 1.1.11 RPs MUST identify the AP through the aud claim of the assertion
+
+[ ] 1.1.12 RPs MUST reject assertions to unknown AP.
+
+[ ] 1.1.13 RPs MAY register to unknown APs that allow dynamic client registration prior of validating the assertion.
+
+
+- LDAP -> assertion client registeration in a special section for Client-Instances
+- Client Instances ONLY allow grant_type urn:ietf:params:oauth:grant-type:jwt-bearer
+- Client Instances MUST have a user reference for sub validation
+- LDAP -> Client Instances MUST have a user reference as DN
+
 # 1.2 Parameters
 
 [x] 1.2.1 RFC 7800: token request MUST include assertion parameter.

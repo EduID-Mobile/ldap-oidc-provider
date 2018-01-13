@@ -47,6 +47,7 @@ module.exports = function factory() {
             decoded.payload.sub)) {
 
             debug("mandatory assertion claims are missings");
+            // TODO find out missing claims
             ctx.throw(new InvalidRequestError("invalid assertion provided"));
         }
 
@@ -75,7 +76,7 @@ module.exports = function factory() {
             }
 
             if (decoded.payload.cnf.kid !== decoded.header.kid) {
-                debug("assertion's kid not matchin the cnf kid");
+                debug("assertion's kid not matching the cnf kid");
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
         }
