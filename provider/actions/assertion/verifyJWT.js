@@ -82,9 +82,11 @@ module.exports = function factory() {
         }
 
         // Timestamp validation for iat, nbf, and exp
-        const now = Date.now() / 1000;
+        const now = parseInt((Date.now() / 1000).toFixed(0));
         const old = now - 1800; // 30 min is max, should be configurable
 
+        // NOTE Some clients have clock problems. normally this should not be a
+        // problem. In case it is, we may want to allow a little variance.
         // debug(`now (${now}) vs. old (${old})`);
 
         if (decoded.payload.iat) {
@@ -94,6 +96,8 @@ module.exports = function factory() {
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
 
+            // debug(`iat claim ${parseInt(decoded.payload.iat)}`);
+            // debug(`now timestamp ${now - parseInt(decoded.payload.iat)}`);
             if (parseInt(decoded.payload.iat) >= now) {
                 debug("premature iat claim");
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));

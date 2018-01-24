@@ -66,6 +66,7 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
             ctx.throw(new InvalidRequestError("unknown assertion issuer"));
         }
 
+        debug("%O", cnfKey);
         await validateClient(ctx, cnfKey.iss);
         await validateJwtWithKey(ctx, jwt, [cnfKey.key]);
 
