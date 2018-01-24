@@ -205,11 +205,11 @@ class LDAPAdapter {
         return op ? `(${op})` : "";
     }
 
-    async _find(filterArray, baseDN = null, scope = "sub") {
+    async raw_find(filterArray, baseDN = null, scope = "sub") {
         if (!this.rootConnection) {
             const p = new Promise((resolve) =>
                 this.wait.push(
-                    () => resolve(this._find(filterArray, baseDN, scope))
+                    () => resolve(this.raw_find(filterArray, baseDN, scope))
                 )
             );
 
@@ -253,7 +253,7 @@ class LDAPAdapter {
     }
 
     async find(filterArray, baseDN = null, scope = "sub") {
-        const result = await this._find(filterArray, baseDN, scope);
+        const result = await this.raw_find(filterArray, baseDN, scope);
 
         await Promise.all(
             result.map(
@@ -286,7 +286,8 @@ class LDAPAdapter {
     // connector
 
     async findAndBind(filter, password, scope = "sub") {
-        const resultset = await this.find(filter, this.opts.base, scope);
+        // use the raw result of raw_find() instead of the transformed result of find().
+        const resultset = await this.raw_find(filter, this.opts.base, scope);
 
         if (resultset.length && resultset[0]) {
             const entry = resultset[0];
