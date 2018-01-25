@@ -132,7 +132,7 @@ class LDAPAdapter {
 
         const connection = ldap.createClient(cliOpts);
 
-        await new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
+        const testConnection = await new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
             connection.bind(userdn, passwd, (err) => {
                 if (err) {
                     // the adapters MUST NOT throw errors, because this removes
@@ -148,6 +148,10 @@ class LDAPAdapter {
                 }
             });
         });
+
+        if (!testConnection) {
+            return null;
+        }
 
         if (!this.rootConnection) {
             debug("set root connection");
