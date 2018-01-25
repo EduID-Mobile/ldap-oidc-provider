@@ -99,7 +99,7 @@ module.exports = function factory() {
             // debug(`iat claim ${parseInt(decoded.payload.iat)}`);
             // debug(`now timestamp ${now - parseInt(decoded.payload.iat)}`);
             if (parseInt(decoded.payload.iat) >= now) {
-                debug(`premature iat claim ${decoded.payload.iat} is ${now - parseInt(decoded.payload.iat)} off `);
+                debug(`premature iat claim ${decoded.payload.iat} is ${now - parseInt(decoded.payload.iat)} sec off `);
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
 
@@ -118,7 +118,8 @@ module.exports = function factory() {
             }
 
             if (parseInt(decoded.payload.nbf) >= now) {
-                debug("premature nbf claim");
+                debug(`premature iat claim ${decoded.payload.nbf} is ${now - parseInt(decoded.payload.nbf)} sec off `);
+
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
 
