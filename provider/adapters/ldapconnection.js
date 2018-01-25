@@ -160,6 +160,9 @@ class LDAPAdapter {
             debug("root connection is already set");
         }
 
+        if (!connection) {
+            debug("there is no conncetion ...");
+        }
         return connection;
     }
 
@@ -304,6 +307,10 @@ class LDAPAdapter {
 
             debug("Entry is %O", entry);
             const userConnection = await this.connect(entry.dn, password);
+
+            if (userConnection === this.rootConnection) {
+                debug("there is a problem");
+            }
 
             return this.cloneWithConnection(userConnection, {base: entry.dn});
         }
