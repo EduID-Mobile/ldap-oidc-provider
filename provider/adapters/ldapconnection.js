@@ -1,6 +1,6 @@
 "use strict";
 
-const debug = require("debug")("ldap-oidc:ldap-connection");
+// const debug = require("debug")("ldap-oidc:ldap-connection");
 const ldap     = require("ldapjs");
 
 const LdapErrors = {
@@ -100,13 +100,11 @@ class LDAPAdapter {
 
     async connect(userdn = null, passwd = null) {
         if (this.rootConnection && !userdn && !passwd) {
-            debug("return root connection");
             return this.rootConnection;
         }
 
         if (!this.rootConnection) {
             if (this.connectAttempt) {
-                debug("already connecting return null");
                 return null;
             }
             this.connectAttempt = true;
@@ -128,8 +126,6 @@ class LDAPAdapter {
             passwd = this.opts.password;
         }
 
-        debug("use credentials for " + userdn + " and " + passwd);
-
         const connection = ldap.createClient(cliOpts);
 
         const testConnection = await new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
@@ -143,7 +139,6 @@ class LDAPAdapter {
                     resolve(null);
                 }
                 else {
-                    debug("connection binding is ok");
                     resolve(connection);
                 }
             });
@@ -154,19 +149,12 @@ class LDAPAdapter {
         }
 
         if (!this.rootConnection) {
-            debug("set root connection");
             this.rootConnection = connection;
             delete this.connectAttempt;
             await Promise.all(this.wait.map((f) => f()));
             delete this.wait;
         }
-        else {
-            debug("root connection is already set");
-        }
 
-        if (!connection) {
-            debug("there is no conncetion ...");
-        }
         return connection;
     }
 
@@ -308,13 +296,7 @@ class LDAPAdapter {
 
         if (resultset.length && resultset[0]) {
             const entry = resultset[0];
-
-            debug("Entry is %O", entry);
             const userConnection = await this.connect(entry.dn, password);
-
-            if (userConnection === this.rootConnection) {
-                debug("there is a problem");
-            }
 
             return this.cloneWithConnection(userConnection, {base: entry.dn});
         }
