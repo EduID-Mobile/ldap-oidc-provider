@@ -71,6 +71,8 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
 
         const cnfJWK = await settings.adapter("ConfirmationKeysJWK").find(kid);
 
+        debug("JWK %O", cnfJWK);
+
         await validateJwtWithKey(ctx, jwt, [cnfJWK]);
 
         if (cnfKey.sub !== jwt.payload.sub) {
