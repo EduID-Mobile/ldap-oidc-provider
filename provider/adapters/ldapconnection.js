@@ -100,11 +100,13 @@ class LDAPAdapter {
 
     async connect(userdn = null, passwd = null) {
         if (this.rootConnection && !userdn && !passwd) {
+            debug("return root connection");
             return this.rootConnection;
         }
 
         if (!this.rootConnection) {
             if (this.connectAttempt) {
+                debug("already connecting return null");
                 return null;
             }
             this.connectAttempt = true;
@@ -126,6 +128,8 @@ class LDAPAdapter {
             passwd = this.opts.password;
         }
 
+        debug("use credentials for " + userdn + " and " + passwd);
+
         const connection = ldap.createClient(cliOpts);
 
         await new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
@@ -139,16 +143,21 @@ class LDAPAdapter {
                     resolve(null);
                 }
                 else {
+                    debug("connection binding is ok");
                     resolve(connection);
                 }
             });
         });
 
         if (!this.rootConnection) {
+            debug("set root connection");
             this.rootConnection = connection;
             delete this.connectAttempt;
             await Promise.all(this.wait.map((f) => f()));
             delete this.wait;
+        }
+        else {
+            debug("root connection is already set");
         }
 
         return connection;
