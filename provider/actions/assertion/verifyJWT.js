@@ -87,7 +87,7 @@ module.exports = function factory() {
 
         // NOTE Some clients have clock problems. normally this should not be a
         // problem. In case it is, we may want to allow a little variance.
-        // debug(`now (${now}) vs. old (${old})`);
+        debug(`now (${now}) vs. old (${old})`);
 
         if (decoded.payload.iat) {
             if (isNaN(decoded.payload.iat) ||
@@ -99,7 +99,7 @@ module.exports = function factory() {
             // debug(`iat claim ${parseInt(decoded.payload.iat)}`);
             // debug(`now timestamp ${now - parseInt(decoded.payload.iat)}`);
             if (parseInt(decoded.payload.iat) >= now) {
-                debug("premature iat claim");
+                debug(`premature iat claim ${decoded.payload.iat} is ${now - parseInt(decoded.payload.iat)} off `);
                 ctx.throw(new InvalidRequestError("invalid assertion provided"));
             }
 
