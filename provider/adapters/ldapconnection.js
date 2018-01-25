@@ -1,5 +1,6 @@
 "use strict";
 
+const debug = require("debug")("ldap-oidc:ldap-connection");
 const ldap     = require("ldapjs");
 
 const LdapErrors = {
@@ -291,6 +292,8 @@ class LDAPAdapter {
 
         if (resultset.length && resultset[0]) {
             const entry = resultset[0];
+
+            debug("Entry is %O", entry);
             const userConnection = await this.connect(entry.dn, password);
 
             return this.cloneWithConnection(userConnection, {base: entry.dn});
