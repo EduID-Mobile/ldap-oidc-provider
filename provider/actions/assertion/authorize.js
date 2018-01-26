@@ -20,6 +20,10 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
 
             if (ctx.oidc.client.clientId !== claims.iss) {
                 if (Array.isArray(ctx.oidc.client.redirectUris)) {
+                    debug("%O", claims.azp);
+                    debug("%O", ctx.oidc.client);
+                    debug("%O", ctx.oidc.client.redirectUris);
+
                     if(ctx.oidc.client.redirectUris.indexOf(claims.azp) < 0)  {
                         debug("authorizing client does not match the authorized party");
                         ctx.throw(new InvalidRequestError("invalid assertion request"));
