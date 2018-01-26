@@ -71,9 +71,9 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
 
         // const cnfJWK = await settings.adapter("ConfirmationKeysJWK").find(kid);
 
-        debug("JWK %O", cnfKey.jwk);
+        debug("JWK %O", cnfKey.key);
 
-        await validateJwtWithKey(ctx, jwt, [cnfKey.jwk]);
+        await validateJwtWithKey(ctx, jwt, [cnfKey.key]);
 
         if (cnfKey.sub !== jwt.payload.sub) {
             debug("mismatching sub entries for assertion and cnf key");
