@@ -6,11 +6,11 @@ const Debug = require("debug");
 const debug = Debug("ldap-oidc:validate-jwt");
 
 const { InvalidRequestError } = require("oidc-provider/lib/helpers/errors");
-const JWT = require("oidc-provider/lib/helpers/jwt");
+// const JWT = require("oidc-provider/lib/helpers/jwt");
 const {
     parse,
-    JWK: { asKeyStore, isKeyStore },
-    JWS: { createSign, createVerify },
+    JWK: { asKeyStore, isKeyStore },                    // eslint-disable-line
+    // JWS: { createSign, createVerify },
     // JWE: { createEncrypt, createDecrypt },
  } = require("node-jose");
 
@@ -69,11 +69,11 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
         debug("%O", cnfKey);
         await validateClient(ctx, cnfKey.iss);
 
-        const cnfJWK = await settings.adapter("ConfirmationKeysJWK").find(kid);
+        // const cnfJWK = await settings.adapter("ConfirmationKeysJWK").find(kid);
 
-        debug("JWK %O", cnfJWK);
+        debug("JWK %O", cnfKey.jwk);
 
-        await validateJwtWithKey(ctx, jwt, [cnfJWK]);
+        await validateJwtWithKey(ctx, jwt, [cnfKey.jwk]);
 
         if (cnfKey.sub !== jwt.payload.sub) {
             debug("mismatching sub entries for assertion and cnf key");

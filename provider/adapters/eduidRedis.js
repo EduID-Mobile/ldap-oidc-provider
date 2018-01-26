@@ -14,6 +14,15 @@ const _ = require("lodash");
 
 const client = {};
 
+// add all classes here that have deep object structures, so we need to
+// JSON process them when setting or getting them from redis.
+const DumpObjectClasses = [
+    "Client",
+    "Session",
+    "Interaction",
+    "ConfirmationKeys"
+];
+
 function grantKeyFor(id) {
     return `grant:${id}`;
 }
@@ -31,6 +40,11 @@ class RedisAdapter {
             });
         }
 
+        // This is a list of objects that need special treatment
+        if (DumpObjectClasses.indexOf(this.name) >= 0) {
+            this.dump = true;
+        }
+
         this.client = client[connName];
     }
 
@@ -45,6 +59,7 @@ class RedisAdapter {
 
         const grantId = await this.client.hget(key, "grantId");
         const tokens = await this.client.lrange(grantKeyFor(grantId), 0, -1);
+
         await Promise.all(_.map(tokens, token => this.client.del(token)));
         this.client.del(key);
     }
@@ -84,7 +99,7 @@ class RedisAdapter {
     // Clients are not simple objects where value is always a string
     // redis does only allow string values =>
     // work around it to keep the adapter interface simple
-        if (["Client", "Session", "Interaction"].indexOf(this.name) >= 0) {
+        if (this.dump) {
             toStore = { dump: JSON.stringify(payload) };
         }
 

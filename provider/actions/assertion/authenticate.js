@@ -61,7 +61,7 @@ module.exports = function factory(provider, settings) {
             const sessionInfo = {
                 azp: claims.azp,
                 kid: claims.cnf.jwk.kid,
-                // key: claims.cnf.jwk,
+                key: claims.cnf.jwk,
                 iss: claims.iss,
                 sub: ctx.oidc.assertion_grant.sub.userClaims.sub,
                 auth_time: now
@@ -69,7 +69,6 @@ module.exports = function factory(provider, settings) {
 
             debug("upsert session info %O", sessionInfo);
             await settings.adapter("ConfirmationKeys").upsert(sessionInfo.kid, sessionInfo);
-            await settings.adapter("ConfirmationKeysJWK").upsert(sessionInfo.kid, claims.cnf.jwk);
             ctx.oidc.assertion_grant.auth_time = now;
         }
 
