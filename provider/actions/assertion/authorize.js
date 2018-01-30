@@ -35,10 +35,11 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
                 }
             }
 
+            // TODO: Define the correct behaviour of this claim or find a better alternative....
+
             // if (claims.x_jwt) {
             //     let decoded;
 
-                // TODO: Define the correct behaviour of this claim or find a better alternative....
                 // try {
                 //     decoded = JWT.decode(claims.x_jwt);
                 // }
