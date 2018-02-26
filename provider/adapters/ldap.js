@@ -1,8 +1,7 @@
 "use strict";
 
-const log = require("debug")("ldap-oidc:ldap")
+const log = require("debug")("ldap-oidc:ldap");
 
-;
 /**
  * The LDAP Client Adapter handles the different requests related to the client
  * Information. This covers information for the following adapter types:
