@@ -21,7 +21,7 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
             if (ctx.oidc.client.clientId !== claims.iss) {
                 if (Array.isArray(ctx.oidc.client.redirectUris)) {
                     debug("%O", claims.azp);
-                    debug("%O", ctx.oidc.client);
+                    // debug("%O", ctx.oidc.client);
                     debug("%O", ctx.oidc.client.redirectUris);
 
                     if(ctx.oidc.client.redirectUris.indexOf(claims.azp) < 0)  {
@@ -35,32 +35,34 @@ module.exports = function factory(provider, settings) { // eslint-disable-line
                 }
             }
 
-            if (claims.x_jwt) {
-                let decoded;
+            // TODO: Define the correct behaviour of this claim or find a better alternative....
 
-                try {
-                    decoded = JWT.decode(claims.x_jwt);
-                }
-                catch (error) {
-                    debug("x_jwt claim is an invalid compact serialization");
-                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                }
+            // if (claims.x_jwt) {
+            //     let decoded;
 
-                if (!decoded) {
-                    debug("x_jwt claim is invalid");
-                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                }
-
-                if (!decoded.payload.iss) {
-                    debug("x_jwt.iss claim MUST be present");
-                    ctx.throw(new InvalidRequestError("invalid assertion provided"));
-                }
+                // try {
+                //     decoded = JWT.decode(claims.x_jwt);
+                // }
+                // catch (error) {
+                //     debug("x_jwt claim is an invalid compact serialization");
+                //     ctx.throw(new InvalidRequestError("invalid assertion provided"));
+                // }
+                //
+                // if (!decoded) {
+                //     debug("x_jwt claim is invalid");
+                //     ctx.throw(new InvalidRequestError("invalid assertion provided"));
+                // }
+                //
+                // if (!decoded.payload.iss) {
+                //     debug("x_jwt.iss claim MUST be present");
+                //     ctx.throw(new InvalidRequestError("invalid assertion provided"));
+                // }
 
                 // TODO verify if the iss is an registered app (optional, configurable)
                 // TODO if the jwt is signed, then verify if the signature matches the iss/kid combination (optional)
 
                 // NOTE: additional multi-factor auth information might be present in the x_crd claim
-            }
+            // }
         }
         await next();
     };
