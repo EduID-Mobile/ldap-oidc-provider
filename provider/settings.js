@@ -8,6 +8,16 @@ const pkg = require("../package.json");
 
 module.exports.config = {
   // session management
+    "integrity-keys": "/etc/oidc/keys/integrity",
+    "certificates": "/etc/oidc/keys/certificates",
+    "connections": "/etc/oidc/connections",
+    "pairwiseSalt": "/etc/oidc/pairwise_salt",
+    "adapters": "/etc/oidc/adapters",
+    "urls": {
+        "issuer": "https://example.com/oidc",
+        "interaction": "https://example.com/oidc/interaction/",
+        "homepage": "https://example.com",
+    },
     acrValues: ["session", "urn:mace:switch.ch:SWITCHaai:eduid.ch"],
     cookies: {
         long: { signed: true },
@@ -45,12 +55,12 @@ module.exports.config = {
         discovery: true,
         alwaysIssueRefresh: false,
         oauthNativeApps: false, // AppAuth Support
-        pkce: true,             // PIXI Support
+        pkce: true,             // PKCE Support (for app auth)
+        jwtassertion: false,
     },
-  // ???
     subjectTypes: ["public", "pairwise"],
-    pairwiseSalt: "da1c442b365b563dfc121f285a11eedee5bbff7110d55c88",
     prompts: ["consent", "login", "none"],
     scopes: ["address", "email", "offline_access", "openid", "phone", "profile"],
-    port: 3000
+    port: 3000,
+    "logging": false,
 };

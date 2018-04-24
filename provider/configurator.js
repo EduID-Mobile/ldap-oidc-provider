@@ -1,59 +1,97 @@
 "use strict";
 
-const debug = require("debug")("ldap-oidc:settings");
+const Debug = require("debug");
+const debug = Debug("ldap-oidc:Configurator");
 const assert = require("assert");
 
 // const _ = require("lodash");
 const fs = require("./helper/asyncfs");
 const path = require("path");
 const Account = require("./account.js");
-const jose = require("node-jose");
 
 // The configuration integrates the official default settings with the
 // local settings. This allows administrators for focus on the key aspects
 // and otherwise stick with the defaults.
-const AdapterFactory = require("./adapters/factory.js");
-const KeyLoader = require("./helper/keyloader.js");
-const LoggingFactory = require("./helper/logging.js");
-// const findConnection = require("./adapters/ldapmanager.js");
-const grantTypeFactory = require("./actions");
+const AdapterFactory = require("./adapters/factory2.js");
 
-const compose = require("koa-compose");
+// const findConnection = require("./adapters/ldapmanager.js");
 
 // load the provider
 const Provider = require("oidc-provider");
+const JWTAssertion  = require("oauth-jwt-assertion");
 
 // load the frontend
 const setupFrontEnd = require("./helper/frontend.js");
 
 // the defaults are the unaltered settings as provided by oidc-provider.
-const def = require("./settings.js");
-const assertionClaimHandler = {};
+const defaultSettings = require("./settings.js");
 
 let instanceConfig;
 
+async function loadConfiguration(configPath) {
+    // is path file or dir?
+    const stat = await fs.stat(configPath);
+
+    if (stat.isFile()) {
+        return loadCfgFile(configPath);
+    }
+    else if (stat.isDirectory()) {
+        return loadCfgDirectory(configPath);
+    }
+    return {};
+}
+
+async function loadCfgDirectory(configPath) {
+    const files = await fs.readdir(configPath);
+
+    let config = {};
+
+    for (var i = 0; i < files.length; i++) {
+        let stat = await fs.stat(path.join(configPath, files[i]));
+
+        if (stat.isFile()) {
+            let tCfg = loadCfgFile(configPath);
+
+            config = Object.assign(tCfg, config);
+        }
+    }
+    return config;
+}
+
+async function loadCfgFile(configFile) {
+    const cfg = await fs.readFile(configFile);
+
+    return JSON.parse(cfg.trim());
+}
+
 class Configurator {
     constructor() {
-        // find out where and how these keys are used
-        this.keys = ["some secret key", "and also the old one"];
-
         // create certificate stubs
         this.certificates = {keys: []};
         this.integrityKeys = {keys: []};
     }
 
-    async initProvider() {
-        await this.loadMappings();
-        await this.loadKeyStores();
+    setupLogging() {
+        if (this.settings.logging) {
+            if (this.settings.logging === "debug") {
+                Debug.enable("debug:ldap-oidc:*,ldap-oidc:*,oidc-provider:*");
+            }
+            else {
+                Debug.enable("ldap-oidc:*,oidc-provider:*");
+            }
+        }
+    }
 
-        this.provider = new Provider(this.issuerUrl, this.config);
+    async initProvider() {
+        this.provider = new Provider(this.issuerUrl, this.settings);
+
         this.registerGrantTypes();
 
         await this.provider.initialize(this.keyStores);
 
         setupFrontEnd(this);
 
-        await this.provider.app.listen(this.config.port);
+        await this.provider.app.listen(this.settings.port);
     }
 
     async findConfiguration(extraPaths = [], force = false) {
@@ -64,11 +102,11 @@ class Configurator {
         // 4. {code directory}/configuration
 
         let searchPath = [
-            path.join(path.dirname(__dirname), "configuration")
+            path.join(path.dirname(__dirname), "configuration/settings.json")
         ];
 
         if (process.platform !== "win32") {
-            searchPath.unshift("/etc/oidc");
+            searchPath.unshift("/etc/oidc/settings.json");
         }
 
         // allow installations to extend the search path
@@ -84,7 +122,8 @@ class Configurator {
                 //split mutliple paths, if provided
                 extraPaths = extraPaths.trim().split(path.delimiter);
             }
-            if (Array.isArray(extraPaths)) {
+
+            if (Array.isArray(extraPaths) && extraPaths.length) {
                 if (force) {
                     searchPath = extraPaths;
                 }
@@ -92,14 +131,6 @@ class Configurator {
                     searchPath = extraPaths.concat(searchPath);
                 }
             }
-        }
-
-        this.cfgFilename = "settings.json";
-        // allow installations to overwrite the default filename
-        const envFN = process.env.OIDC_CONFIG_FILENAME;
-
-        if (envFN && envFN.trim().length) {
-            this.cfgFilename = envFN.trim();
         }
 
         const validPaths = await Promise.all(
@@ -112,12 +143,73 @@ class Configurator {
 
         assert(filename, "Cannot find OIDC configuration file");
 
-        return this.loadConfiguration(filename);
+        const config = await loadConfiguration(filename);
+        const settings = Object.assign(defaultSettings, config);
+
+        // walk the potential configuration files.
+
+        // check keys
+        const keystores = ["integrity-keys", "certificates"];
+
+        if (typeof settings[keystores[1]] === "string") {
+            this.certificates = await loadConfiguration(settings[keystores[1]]);
+        }
+        else {
+            this.certificates = settings[keystores[1]];
+        }
+
+        if (typeof settings[keystores[0]] === "string") {
+            this.integrityKeys = await loadConfiguration(settings[keystores[0]]);
+        }
+        else {
+            this.integrityKeys = settings[keystores[0]];
+        }
+
+        if (typeof settings.connections === "string") {
+            settings.connections = await loadConfiguration(settings.connections);
+        }
+
+        if (typeof settings.adapters === "string") {
+            settings.adapters = await loadConfiguration(settings.adapters);
+        }
+
+        if (typeof settings.adapters === "object") {
+            for (let aname in settings.adapters) {
+                if (typeof settings.adapters[aname].mapping === "string") {
+                    settings.adapters[aname].mapping = await loadConfiguration(settings.adapters[aname].mapping);
+                }
+            }
+        }
+
+        if (typeof settings.pairwiseSalt === "string") {
+            const psStat = await fs.stat(settings.pairwiseSalt);
+
+            if (psStat.isFile()) {
+                settings.pairwiseSalt = await fs.readFile(settings.pairwiseSalt);
+                settings.pairwiseSalt = settings.pairwiseSalt.trim();
+            }
+        }
+
+        // activate logging
+        this.setupLogging();
+
+        // initialize the data sources
+        this.adapter = AdapterFactory(settings.connections, settings.adapters);
+
+        settings.interactionUrl = function (ctx, ia) { // eslint-disable-line no-unused-vars
+            return `${settings.urls.interaction}${ctx.oidc.uuid}`;
+        };
+
+        if (settings.urls.homepage) {
+            settings.discovery.service_documentation = settings.urls.homepage;
+        }
+
+        settings.findById = (ctx, id) => this.accountById(id);
+
+        this.settings = settings;
     }
 
     async checkConfigurationDir(filename) {
-        filename = path.join(filename.trim(), this.cfgFilename);
-
         try {
             const stat = await fs.stat(filename);
 
@@ -130,56 +222,6 @@ class Configurator {
         }
 
         return false;
-    }
-
-    async loadConfiguration(cfgFile) {
-        const cfg = await fs.readFile(cfgFile);
-
-        this.referencePath = path.dirname(cfgFile);
-        return this.reduceConfiguration(JSON.parse(cfg.toString()));
-    }
-
-    setConfiguration(config, refPath = "") {
-        if (typeof config === "string") {
-            config = JSON.parse(config);
-        }
-
-        this.referencePath = refPath || "";
-        return this.reduceConfiguration(config);
-    }
-
-    reduceConfiguration(config) {
-        const settings = {};
-
-        Object.keys(def.config)
-            .map((k) => {
-                settings[k] = config.config[k] ? config.config[k] : def.config[k];
-                if (config.config[`${k}Extras`]) {
-                    Object
-                        .keys(config.config[`${k}Extras`])
-                        .map((ek) => settings[k][ek] = config.config[`${k}Extras`][ek]);
-                }
-            });
-
-        var confirmUrl = config.urls.interaction;
-
-        settings.interactionUrl = function (ctx, ia) { // eslint-disable-line no-unused-vars
-            return `${confirmUrl}${ctx.oidc.uuid}`;
-        };
-
-        config.log = LoggingFactory(config);
-
-        if (config.urls.homepage) {
-            settings.discovery.service_documentation = config.urls.homepage;
-        }
-
-        settings.findById = (ctx, id) => this.accountById(id);
-        instanceConfig = config;
-        instanceConfig.mapping = {};
-
-        this.adapter = AdapterFactory(instanceConfig);
-
-        return this.settings = settings;
     }
 
     async accountById(userid) {
@@ -220,106 +262,15 @@ class Configurator {
     }
 
     getAcr() {
-        let retval = this.config.acrValues.find((v) => v.indexOf("urn:") === 0);
+        let retval = this.settings.acrValues.find((v) => v.indexOf("urn:") === 0);
 
-        return retval >= 0 ? this.config.acrValues[retval] : null;
-    }
-
-    async loadMappings() {
-        instanceConfig.mapping = {};
-        if (instanceConfig.ldap) {
-            await Promise.all(Object.keys(instanceConfig.ldap.organization).map(
-                (k) => this.loadMappingFile(k)
-            ));
-        }
-    }
-
-    async loadMappingFile(name) {
-        if (!(name && name.length)) {
-            return null;
-        }
-
-        let mapFile = instanceConfig.ldap.organization[name] ? instanceConfig.ldap.organization[name].mapping : null;
-
-        if (!(mapFile && mapFile.length)) {
-            return null;
-        }
-
-        if (!path.isAbsolute(mapFile)) {
-            mapFile = path.join(this.referencePath, mapFile);
-        }
-
-        name = name.toLowerCase();
-
-        // throw errors on non existing or corrupted files
-        const data = await fs.readFile(mapFile);
-        const result = JSON.parse(data.toString("utf8"));
-
-        instanceConfig.mapping[name] = result;
-        return result;
-    }
-
-    async loadKeyStores() {
-        // return promise when keystores are loaded.
-        await Promise.all([
-            this.loadKeyStore(instanceConfig.certificates.external)
-                .then((ks) => this.mergeStore(ks, "certificates")),
-            this.loadKeyStore(instanceConfig.certificates.internal)
-                .then((ks) => this.mergeStore(ks, "integrityKeys"))
-        ]);
-
-        return this.keyStores;
-    }
-
-    async loadKeyStore(cfg) {
-        const kl = new KeyLoader();
-        let tPath = cfg.path;
-
-        if (cfg.source === "folder") {
-            if (!path.isAbsolute(tPath)) {
-                tPath = path.join(this.referencePath, tPath);
-            }
-            await kl.loadKeyDir(tPath);
-        }
-        else if (cfg.source === "file") {
-            if (!path.isAbsolute(tPath)) {
-                tPath = path.join(this.referencePath, tPath);
-            }
-            await kl.loadKey(tPath);
-        }
-        return kl.keys;
-    }
-
-    async mergeStore(keystore, type) {
-        const jwks = await jose.JWK.asKeyStore(this[type]);
-
-        await Promise.all(keystore.keys.map((k) => jwks.add(k)));
-
-        this[type] = jwks.toJSON(true);
+        return retval >= 0 ? this.settings.acrValues[retval] : null;
     }
 
     registerGrantTypes() {
-        if (typeof instanceConfig.grant_types === "object" &&
-            !Array.isArray(instanceConfig.grant_types)) {
-
-            Object.keys(instanceConfig.grant_types)
-                .map((gt) => this.provider.registerGrantType(gt,
-                                                             grantTypeFactory(instanceConfig.grant_types[gt].handler, this),
-                                                             instanceConfig.grant_types[gt].parameter));
+        if (this.settings.features && this.settings.features.jwtassertion) {
+            JWTAssertion.registerGrantType(this.provider, this);
         }
-    }
-
-    registerAssertionValidator(assertionClaim, claimValidator) {
-        assert(assertionClaim, "no assertion claim provided");
-        assert(claimValidator, "no claim validator provided ");
-        assert.equal(typeof claimValidator, "function", "claim handler is not a function");
-        assert(assertionClaimHandler[assertionClaim], "claim handler already configured");
-
-        assertionClaimHandler[assertionClaim] = claimValidator;
-    }
-
-    getAssertionValidators(claimset) {
-        return compose(Object.keys(assertionClaimHandler).filter((claim) => claimset.includes(claim)));
     }
 
     get config() {
@@ -344,13 +295,10 @@ class Configurator {
     }
 
     get issuerUrl() {
-        return instanceConfig.urls.issuer;
+        return this.settings.urls.issuer;
     }
 
     get accountInfo() {
-        if (instanceConfig.ldap) {
-            return instanceConfig.ldap.organization.Account;
-        }
         return { "id": "sub" };
     }
 }
