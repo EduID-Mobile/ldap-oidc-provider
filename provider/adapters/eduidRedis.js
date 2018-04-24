@@ -10,9 +10,7 @@
 // This infomration does not change very often.
 
 const Redis = require("ioredis"); // eslint-disable-line import/no-unresolved
-const _ = require("lodash");
-
-const client = {};
+const _ = require("lodash"); // its OK, because node-oidc-provider uses LD alot
 
 // add all classes here that have deep object structures, so we need to
 // JSON process them when setting or getting them from redis.
@@ -28,24 +26,17 @@ function grantKeyFor(id) {
 }
 
 class RedisAdapter {
-    constructor(name, cfg) {
-        this.expose = () => {};
+    constructor(name, source, config) {
+        this.expose = () => {}; // would be used for debug
 
-        this.name = name;
-        const connName = cfg.redis.connection[name] ? "name" : "common";
-
-        if (!client[connName]) {
-            client[connName] = new Redis(cfg.redis.connection[connName].url, {
-                keyPrefix: `${cfg.redis.connection[connName].prefix}:`
-            });
-        }
+        this.name   = name;
+        this.client = source;
 
         // This is a list of objects that need special treatment
-        if (DumpObjectClasses.indexOf(this.name) >= 0) {
+        // (if no redisJSON is installed) -- which is currently unsupported
+        if (DumpObjectClasses.indexOf(name) >= 0) {
             this.dump = true;
         }
-
-        this.client = client[connName];
     }
 
     key(id) {
@@ -121,4 +112,11 @@ class RedisAdapter {
     }
 }
 
+function setConnection(config) {
+  return new Redis(config.url, {
+      keyPrefix: `${config.prefix}:`
+  });
+};
+
 module.exports = RedisAdapter;
+module.exports.connection = setConnection;
