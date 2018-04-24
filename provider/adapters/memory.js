@@ -3,7 +3,7 @@
  * MemoryAdapter stolen from node-oidc-provider.
  * extended by findLogin() and bindLogin()
  */
-const debug = require("debug")("ldap-oidc:memory_db");
+const debug = require("debug")("ldap-oidc:memory");
 const LRU = require("lru-cache");
 const epochTime = require("oidc-provider/lib/helpers/epoch_time");
 

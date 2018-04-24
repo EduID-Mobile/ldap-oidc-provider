@@ -5,7 +5,7 @@
  *
  * the frontend function sets up the koa routes for the interactive components.
  */
-const debug = require("debug")("ldap-oidc:frontend");
+const debug = require("debug")("ldap-oidc:helper:frontend");
 const path = require("path");
 
 const bodyParser = require("koa-body");

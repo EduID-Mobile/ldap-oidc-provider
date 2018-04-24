@@ -3,7 +3,7 @@
 const Debug = require("debug");
 const debug = Debug("ldap-oidc:adapter:factory");
 
-const RedisAdapter   = require("./eduidRedis");
+const RedisAdapter   = require("oidc-redis-adapter");
 const MemoryAdapter  = require("./memory");
 const LdapAdapter    = require("oidc-ldap-adapter");
 

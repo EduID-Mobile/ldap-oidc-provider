@@ -2,9 +2,6 @@
 
 // This module contains the Adapter for the account information
 
-const Mapping = require("./mapping")("Account");
-const mapClaims = require("./mapping/map_claims.js");
-
 /**
  * @class Account
  *

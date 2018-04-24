@@ -1,7 +1,7 @@
 "use strict";
 
 const Debug = require("debug");
-const debug = Debug("ldap-oidc:Configurator");
+const debug = Debug("ldap-oidc:configurator");
 const assert = require("assert");
 
 // const _ = require("lodash");
