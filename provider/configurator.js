@@ -143,6 +143,7 @@ class Configurator {
 
         assert(filename, "Cannot find OIDC configuration file");
 
+        // proces configuration
         const config = await loadConfiguration(filename);
         const settings = Object.assign(defaultSettings, config);
 
