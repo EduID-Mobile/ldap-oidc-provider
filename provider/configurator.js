@@ -72,10 +72,10 @@ class Configurator {
     setupLogging() {
         if (this.settings.logging) {
             if (this.settings.logging === "debug") {
-                Debug.enable("debug:ldap-oidc:*,ldap-oidc:*,oidc-provider:*");
+                Debug.enable("develop-oidc:*,ldap-oidc:*,oidc-provider:*,jwt-assertion:*,ldap-adapter:*");
             }
             else {
-                Debug.enable("ldap-oidc:*,oidc-provider:*");
+                Debug.enable("ldap-oidc:*,jwt-assertion:*,ldap-adapter:*");
             }
         }
     }
