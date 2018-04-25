@@ -26,8 +26,6 @@ const setupFrontEnd = require("./helper/frontend.js");
 // the defaults are the unaltered settings as provided by oidc-provider.
 const defaultSettings = require("./settings.js");
 
-let instanceConfig;
-
 async function loadConfiguration(configPath) {
     // is path file or dir?
     const stat = await fs.stat(configPath);
@@ -268,9 +266,24 @@ class Configurator {
         return retval >= 0 ? this.settings.acrValues[retval] : null;
     }
 
+    activateAssertionTypes() {
+        if (this.settings.features && this.settings.features.jwtassertion) {
+            if (!("jwtProxyAuthorization" in this.settings.features) ||
+                this.settings.features.jwtProxyAuthorization) {
+                JWTAssertion.registerHandler(JWTAssertion.handler.authorization);
+            }
+            if (!("jwtProxyAuthentication" in this.settings.features) ||
+                this.settings.features.jwtProxyAuthentication) {
+                JWTAssertion.registerHandler(JWTAssertion.handler.authentication);
+            }
+        }
+    }
+
     registerGrantTypes() {
         if (this.settings.features && this.settings.features.jwtassertion) {
             JWTAssertion.registerGrantType(this.provider, this);
+
+            this.activateAssertionTypes();
         }
     }
 
@@ -279,11 +292,11 @@ class Configurator {
     }
 
     get customization() {
-        return instanceConfig;
+        return this.settings;
     }
 
     get urls() {
-        return instanceConfig.urls;
+        return this.settings.urls;
     }
 
     get keyStores() {
