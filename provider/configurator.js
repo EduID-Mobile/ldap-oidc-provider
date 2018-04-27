@@ -24,19 +24,40 @@ const JWTAssertion  = require("oauth-jwt-assertion");
 const setupFrontEnd = require("./helper/frontend.js");
 
 // the defaults are the unaltered settings as provided by oidc-provider.
-const defaultSettings = require("./settings.js");
+const defaultSettings = require("../configuration/settings.js");
+
+// The following options are complex and might be sourced into separate files
+const ExtOptions = [
+    "integrity-keys",
+    "certificates",
+    "connections",
+    "adapters",
+    "pairwiseSalt"
+];
+
+// The following options have complex default values, that should reuse default
+// options unless they are explicitly set by the configuration
+const ObjOptions = [
+    "cookies",
+    "discovery",
+    "claims",
+    "features",
+];
 
 async function loadConfiguration(configPath) {
     // is path file or dir?
-    const stat = await fs.stat(configPath);
+    if (typeof configPath === "string") {
+        const stat = await fs.stat(configPath);
 
-    if (stat.isFile()) {
-        return loadCfgFile(configPath);
+        if (stat.isFile()) {
+            return loadCfgFile(configPath);
+        }
+        else if (stat.isDirectory()) {
+            return loadCfgDirectory(configPath);
+        }
+        // return {};
     }
-    else if (stat.isDirectory()) {
-        return loadCfgDirectory(configPath);
-    }
-    return {};
+    return configPath;
 }
 
 async function loadCfgDirectory(configPath) {
@@ -50,7 +71,9 @@ async function loadCfgDirectory(configPath) {
         if (stat.isFile()) {
             let tCfg = loadCfgFile(configPath);
 
-            config = Object.assign(tCfg, config);
+            if (typeof tCfg === "object") {
+                config = Object.assign(config, tCfg);
+            }
         }
     }
     return config;
@@ -58,8 +81,16 @@ async function loadCfgDirectory(configPath) {
 
 async function loadCfgFile(configFile) {
     const cfg = await fs.readFile(configFile);
+    let cfgObj;
 
-    return JSON.parse(cfg.trim());
+    try {
+        cfgObj = JSON.parse(cfg.trim());
+    }
+    catch (err) {
+        return cfg.trim();
+    }
+
+    return cfgObj;
 }
 
 class Configurator {
@@ -105,6 +136,9 @@ class Configurator {
 
         if (process.platform !== "win32") {
             searchPath.unshift("/etc/oidc/settings.json");
+            // check for docker secrets and configs
+            searchPath.unshift("/settings.json");
+            searchPath.unshift("/run/secrets/settings.json");
         }
 
         // allow installations to extend the search path
@@ -141,52 +175,31 @@ class Configurator {
 
         assert(filename, "Cannot find OIDC configuration file");
 
-        // proces configuration
+        // proces the basic configuration
         const config = await loadConfiguration(filename);
+
+        // overwrite the default values
         const settings = Object.assign(defaultSettings, config);
 
-        // walk the potential configuration files.
+        // ensure that configuration is complete also reassign the deeper values.
+        ObjOptions.map(
+          (option) => settings[option] = Object.assign(defaultSettings[option], settings[option])
+         );
 
-        // check keys
-        const keystores = ["integrity-keys", "certificates"];
+        // walk the potential external configuration files.
+        await Promise.all(
+              ExtOptions.map(
+                async option => settings[option] = await loadConfiguration(settings[option])
+              )
+        );
 
-        if (typeof settings[keystores[1]] === "string") {
-            this.certificates = await loadConfiguration(settings[keystores[1]]);
-        }
-        else {
-            this.certificates = settings[keystores[1]];
-        }
-
-        if (typeof settings[keystores[0]] === "string") {
-            this.integrityKeys = await loadConfiguration(settings[keystores[0]]);
-        }
-        else {
-            this.integrityKeys = settings[keystores[0]];
-        }
-
-        if (typeof settings.connections === "string") {
-            settings.connections = await loadConfiguration(settings.connections);
-        }
-
-        if (typeof settings.adapters === "string") {
-            settings.adapters = await loadConfiguration(settings.adapters);
-        }
-
+        // check if the mapping files might be also externalised
         if (typeof settings.adapters === "object") {
-            for (let aname in settings.adapters) {
-                if (typeof settings.adapters[aname].mapping === "string") {
-                    settings.adapters[aname].mapping = await loadConfiguration(settings.adapters[aname].mapping);
-                }
-            }
-        }
-
-        if (typeof settings.pairwiseSalt === "string") {
-            const psStat = await fs.stat(settings.pairwiseSalt);
-
-            if (psStat.isFile()) {
-                settings.pairwiseSalt = await fs.readFile(settings.pairwiseSalt);
-                settings.pairwiseSalt = settings.pairwiseSalt.trim();
-            }
+            await Promise.all(
+                Object.keys(settings.adapters).map(
+                  async (aname) => settings.adapters[aname].mapping = await loadConfiguration(settings.adapters[aname].mapping)
+                )
+            );
         }
 
         // activate logging
