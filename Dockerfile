@@ -1,6 +1,8 @@
 # use the slime line alpine rather than LTS carbon
 FROM node:alpine
 
+RUN apk add --no-cache git
+
 # Create the app directory
 WORKDIR /usr/src/oidc-provider
 
