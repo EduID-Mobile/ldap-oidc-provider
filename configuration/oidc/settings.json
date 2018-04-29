@@ -1,0 +1,86 @@
+{
+  "integrity-keys": "/etc/oidc/keys/integrity.jwks",
+  "certificates": "/etc/oidc/keys/certificates.jwks",
+  "connections": "/etc/oidc/connections.json",
+  "pairwiseSalt": "/etc/oidc/pairwise_salt",
+  "urls": {
+      "issuer": "https://example.com/oidc",
+      "interaction": "https://example.com/oidc/interaction/",
+      "homepage": "https://example.com",
+  },
+  "features": {
+      "logging": true,
+      "devInteractions": false,
+      "claimsParameter": true,
+      "clientCredentials": true,
+      "encryption": true,
+      "introspection": true,
+      "registration": false,
+      "registrationManagement": false,
+      "request": true,
+      "requestUri": true,
+      "revocation": true,
+      "sessionManagement": true,
+      "backchannelLogout": true,
+      "discovery": true,
+      "alwaysIssueRefresh": false,
+      "oauthNativeApps": false,
+      "pkce": true,
+      "jwtassertion": false,
+      "jwtProxyAuthentication": true,
+      "jwtProxyAuthorization": true
+  },
+  "subjectTypes": ["public", "pairwise"],
+  "prompts": ["consent", "login", "none"],
+  "scopes": ["address", "email", "offline_access", "openid", "phone", "profile"],
+  "port": 3000,
+  "adapters": {
+    "Session": {
+      "source": "redis"
+    },
+    "AccessToken": {
+      "source": "redis"
+    },
+    "AuthorizationCode": {
+      "source": "redis"
+    },
+    "RefreshToken": {
+      "source": "redis"
+    },
+    "InitialAccessToken": {
+      "source": "redis"
+    },
+    "RegistrationAccessToken": {
+      "source": "redis"
+    },
+    "ClientCredentials": {
+      "source": "ldap",
+      "id": "oauthClientID",
+      "base": "ou=clients,dc=example,dc=com",
+      "mapping": "/etc/oidc/client-mapping.json"
+    },
+    "Client": {
+      "source": "ldap",
+      "id": "oauthClientID",
+      "base": "ou=clients,dc=example,dc=com",
+      "mapping": "/etc/oidc/client-mapping.json"
+    },
+    "ProxyClient": {
+      "source": "ldap",
+      "id": "oauthClientID",
+      "base": "ou=proxy,ou=clients,dc=example,dc=com",
+      "mapping": "/etc/oidc/client-mapping.json"
+    },
+    "Account": {
+      "source": "ldap",
+      "bind": "mail",
+      "id": "swissEduID",
+      "base": "ou=accounts,dc=example,dc=com",
+      "mapping": "/etc/oidc/user-mapping.json"
+    },
+    "Interaction": {
+      "comment": "normally this is in memory only",
+      "source": "redis"
+    }
+  }
+}

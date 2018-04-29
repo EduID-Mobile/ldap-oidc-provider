@@ -8,11 +8,11 @@ const pkg = require("../package.json");
 
 module.exports.config = {
   // session management
-    "integrity-keys": "/etc/oidc/keys/integrity",
-    "certificates": "/etc/oidc/keys/certificates",
-    "connections": "/etc/oidc/connections",
+    "integrity-keys": "/etc/oidc/keys/integrity.jwks",
+    "certificates": "/etc/oidc/keys/certificates.jwks",
+    "connections": "/etc/oidc/connections.json",
     "pairwiseSalt": "/etc/oidc/pairwise_salt",
-    "adapters": "/etc/oidc/adapters",
+    "adapters": "/etc/oidc/adapters.json",
     "urls": {
         "issuer": "https://example.com/oidc",
         "interaction": "https://example.com/oidc/interaction/",
