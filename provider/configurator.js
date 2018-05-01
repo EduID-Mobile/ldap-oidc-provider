@@ -81,7 +81,12 @@ async function loadCfgDirectory(configPath) {
 
 async function loadCfgFile(configFile) {
     const cfg = await fs.readFile(configFile);
-    let cfgObj;
+    let cfgObj = {};
+
+    if (!cfg) {
+        debug(`config not loaded ${configFile}`);
+        return cfgObj;
+    }
 
     try {
         cfgObj = JSON.parse(cfg.trim());
