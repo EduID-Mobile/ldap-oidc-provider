@@ -189,7 +189,11 @@ class Configurator {
 
         // ensure that configuration is complete also reassign the deeper values.
         ObjOptions.map(
-          (option) => settings[option] = Object.assign(defaultSettings[option], settings[option] || {})
+          (option) => {
+              debug(`${option} user %O`, settings[option]);
+              debug(`${option} dflt %O`, defaultSettings[option]);
+              settings[option] = Object.assign(defaultSettings[option], settings[option] || {});
+          }
          );
 
         // walk the potential external configuration files.
