@@ -192,16 +192,12 @@ class Configurator {
         const settings = Object.assign(dflt, config);
 
         // ensure that configuration is complete also reassign the deeper values.
-        debug(`settings: ${Object.keys(settings).join(",")}`);
-        debug(`defaults: ${Object.keys(defaultSettings).join(",")}`);
-        debug(`defaults: ${Object.keys(dflt).join(",")}`);
+        // debug(`settings: ${Object.keys(settings).join(",")}`);
+        // debug(`defaults: ${Object.keys(defaultSettings).join(",")}`);
+        // debug(`defaults: ${Object.keys(dflt).join(",")}`);
 
         ObjOptions.map(
-          (option) => {
-              debug(`${option} user %O`, settings[option]);
-              debug(`${option} dflt %O`, defaultSettings[option]);
-              settings[option] = Object.assign(defaultSettings[option], settings[option] || {});
-          }
+          (option) => settings[option] = Object.assign(defaultSettings[option], settings[option] || {})
          );
 
         // walk the potential external configuration files.
@@ -224,6 +220,10 @@ class Configurator {
         this.settings = settings;
         // activate logging
         this.setupLogging();
+
+        // move the keystores into the correct position
+        this.integrityKeys = settings["integrity-keys"];
+        this.certificates = settings["certificates"];
 
         // initialize the data sources
         this.adapter = AdapterFactory(settings.connections, settings.adapters);
