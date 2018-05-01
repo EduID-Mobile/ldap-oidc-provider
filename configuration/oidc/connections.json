@@ -1,9 +1,11 @@
 {
   "redis": {
+    "type": "redis",
     "url": "redis://redis/1",
     "prefix": "oidc"
   },
   "ldap": {
+    "type": "ldap",
     "url": "ldap://openldap:389",
     "bind": "cn=oidc,ou=configuration,dc=example,dc=com",
     "base": "dc=example,dc=com",
