@@ -186,13 +186,13 @@ class Configurator {
 
         // proces the basic configuration
         const config = await loadConfiguration(filename);
-
+        const dflt = Object.assign({}, defaultSettings);
         // overwrite the default values
-        const settings = Object.assign(defaultSettings, config);
+        const settings = Object.assign(dflt, config);
 
         // ensure that configuration is complete also reassign the deeper values.
         debug(`settings: ${Object.keys(settings).join(",")}`);
-        debug(`settings: ${Object.keys(defaultSettings).join(",")}`);
+        debug(`defaults: ${Object.keys(defaultSettings).join(",")}`);
         ObjOptions.map(
           (option) => {
               debug(`${option} user %O`, settings[option]);
