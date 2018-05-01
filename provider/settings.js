@@ -6,7 +6,7 @@ const pkg = require("../package.json");
 
 // based on default values found in oidc-provider lib/helpers/defaults.js
 
-module.exports.config = {
+module.exports = {
   // session management
     "integrity-keys": "/etc/oidc/keys/integrity.jwks",
     "certificates": "/etc/oidc/keys/certificates.jwks",
