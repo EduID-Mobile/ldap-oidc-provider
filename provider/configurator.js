@@ -191,6 +191,8 @@ class Configurator {
         const settings = Object.assign(defaultSettings, config);
 
         // ensure that configuration is complete also reassign the deeper values.
+        debug(`settings: ${Object.keys(settings).join(",")}`);
+        debug(`settings: ${Object.keys(defaultSettings).join(",")}`);
         ObjOptions.map(
           (option) => {
               debug(`${option} user %O`, settings[option]);
