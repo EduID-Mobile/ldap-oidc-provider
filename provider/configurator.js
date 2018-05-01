@@ -24,7 +24,7 @@ const JWTAssertion  = require("oauth-jwt-assertion");
 const setupFrontEnd = require("./helper/frontend.js");
 
 // the defaults are the unaltered settings as provided by oidc-provider.
-const defaultSettings = require("../configuration/settings.js");
+const defaultSettings = require("./settings.js");
 
 // The following options are complex and might be sourced into separate files
 const ExtOptions = [
@@ -141,10 +141,11 @@ class Configurator {
         ];
 
         if (process.platform !== "win32") {
-            searchPath.unshift("/etc/oidc/settings.json");
-            // check for docker secrets and configs
+          // check for docker secrets and configs
             searchPath.unshift("/settings.json");
             searchPath.unshift("/run/secrets/settings.json");
+
+            searchPath.unshift("/etc/oidc/settings.json");
         }
 
         // allow installations to extend the search path
@@ -178,6 +179,8 @@ class Configurator {
         );
 
         const filename = validPaths.find((path) => path !== false);
+
+        debug(filename);
 
         assert(filename, "Cannot find OIDC configuration file");
 
