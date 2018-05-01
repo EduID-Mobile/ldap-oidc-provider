@@ -12,7 +12,7 @@ const Account = require("./account.js");
 // The configuration integrates the official default settings with the
 // local settings. This allows administrators for focus on the key aspects
 // and otherwise stick with the defaults.
-const AdapterFactory = require("./adapters/factory2.js");
+const AdapterFactory = require("./adapters/factory.js");
 
 // const findConnection = require("./adapters/ldapmanager.js");
 
