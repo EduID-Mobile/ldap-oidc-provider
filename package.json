@@ -5,7 +5,7 @@
   "description": "An OIDC Provider to work in LDAP environment.",
   "main": "provider/index.js",
   "scripts": {
-    "start": "node provider/index.js",
+    "start": "node provider/index.js -v",
     "test": "mocha"
   },
   "keywords": [

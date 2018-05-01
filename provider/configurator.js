@@ -83,6 +83,8 @@ async function loadCfgFile(configFile) {
     const cfg = await fs.readFile(configFile);
     let cfgObj = {};
 
+    debug(typeof cfg);
+
     if (!cfg) {
         debug(`config not loaded ${configFile}`);
         return cfgObj;
@@ -93,7 +95,6 @@ async function loadCfgFile(configFile) {
     }
     catch (err) {
         debug("config is not json %O", err);
-        debug(typeof cfg);
         return cfg;
     }
 
