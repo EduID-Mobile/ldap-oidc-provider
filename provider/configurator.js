@@ -80,7 +80,7 @@ async function loadCfgDirectory(configPath) {
 }
 
 async function loadCfgFile(configFile) {
-    const cfg = await fs.readFile(configFile);
+    const cfg = (await fs.readFile(configFile)).toString("utf8");
     let cfgObj = {};
 
     debug(typeof cfg);
