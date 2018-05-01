@@ -220,6 +220,8 @@ class Configurator {
             );
         }
 
+
+        this.settings = settings;
         // activate logging
         this.setupLogging();
 
@@ -235,8 +237,6 @@ class Configurator {
         }
 
         settings.findById = (ctx, id) => this.accountById(id);
-
-        this.settings = settings;
     }
 
     async checkConfigurationDir(filename) {
