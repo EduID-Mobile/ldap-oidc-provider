@@ -181,6 +181,7 @@ class Configurator {
         const filename = validPaths.find((path) => path !== false);
 
         debug(filename);
+        debug(`defaults: ${Object.keys(defaultSettings).join(",")}`);
 
         assert(filename, "Cannot find OIDC configuration file");
 
@@ -193,6 +194,8 @@ class Configurator {
         // ensure that configuration is complete also reassign the deeper values.
         debug(`settings: ${Object.keys(settings).join(",")}`);
         debug(`defaults: ${Object.keys(defaultSettings).join(",")}`);
+        debug(`defaults: ${Object.keys(dflt).join(",")}`);
+
         ObjOptions.map(
           (option) => {
               debug(`${option} user %O`, settings[option]);
