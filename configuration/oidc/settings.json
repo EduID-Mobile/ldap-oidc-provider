@@ -6,7 +6,7 @@
   "urls": {
       "issuer": "https://example.com/oidc",
       "interaction": "https://example.com/oidc/interaction/",
-      "homepage": "https://example.com",
+      "homepage": "https://example.com"
   },
   "features": {
       "logging": true,
