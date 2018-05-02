@@ -283,8 +283,8 @@ class Configurator {
             debug("login user data via userAdapter");
             const userConnection = await userAdapter.findAndBind(login, pwd);
 
+            userData = await userConnection.find(null, "base");
             debug("userData: %O", userData);
-            userData = userConnection.find(null, "base");
 
             if (userData) {
 
