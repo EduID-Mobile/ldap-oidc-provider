@@ -294,9 +294,9 @@ class Configurator {
         }
 
         debug("find user without login");
-        userData = await userAdapter.findByLogin(login);
+        userData = await userAdapter.findBindId(login);
 
-        return userData;
+        return this.accountById(userData[0][this.accountInfo.id]);
     }
 
     getAcr() {
