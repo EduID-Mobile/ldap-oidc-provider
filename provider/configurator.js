@@ -309,11 +309,11 @@ class Configurator {
         if (this.settings.features && this.settings.features.jwtassertion) {
             if (!("jwtProxyAuthorization" in this.settings.features) ||
                 this.settings.features.jwtProxyAuthorization) {
-                JWTAssertion.registerHandler(JWTAssertion.handler.authorization);
+                JWTAssertion.registerHandler(JWTAssertion.handler.authorize);
             }
             if (!("jwtProxyAuthentication" in this.settings.features) ||
                 this.settings.features.jwtProxyAuthentication) {
-                JWTAssertion.registerHandler(JWTAssertion.handler.authentication);
+                JWTAssertion.registerHandler(JWTAssertion.handler.authenticate);
             }
         }
     }
