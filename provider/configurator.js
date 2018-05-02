@@ -277,18 +277,26 @@ class Configurator {
             throw new Error("missing adapter");
         }
 
-        debug("find user data via userAdapter");
-        const userData = await userAdapter.findAndBind(login, pwd);
+        let userData;
 
-        debug("userData: %O", userData);
-        if (userData && userData.length) {
+        if (typeof pwd === "string" && pwd.length){
+            debug("login user data via userAdapter");
+            userData = await userAdapter.findAndBind(login, pwd);
+            debug("userData: %O", userData);
+            if (userData && userData.length) {
 
-            debug("initialize the account %s", this.accountInfo.id);
+                debug("initialize the account %s", this.accountInfo.id);
 
-            return this.accountById(userData[0][this.accountInfo.id]);
+                return this.accountById(userData[0][this.accountInfo.id]);
+            }
+
+            throw new Error("Login Failed");
         }
 
-        throw new Error("Login Failed");
+        debug("find user without login");
+        userData = await userAdapter.findByLogin(login);
+
+        return userData;
     }
 
     getAcr() {
