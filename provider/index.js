@@ -23,7 +23,7 @@ Debug.enable("ldap-oidc:fatal");
 
 if (param.opts.verbose) {
     // log everything
-    Debug.enable("ldap-oidc:*,oidc-provider:*");
+    Debug.enable("ldap-oidc:*,oidc-provider:*,ldap-adapter:*,jwt-assertion:*");
 }
 
 const error = new Debug("ldap-oidc:fatal");
