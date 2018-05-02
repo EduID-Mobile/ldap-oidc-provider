@@ -27,7 +27,7 @@
   "dependencies": {
     "oauth-jwt-assertion": "git+http://github.com/phish108/oauth-jwt-assertion.git",
     "oidc-ldap-adapter": "git+http://github.com/phish108/ldap-adapter.git",
-    "oidc-provider": "^2.18.1",
+    "oidc-provider": "^2.18.2",
     "oidc-redis-adapter": "git+http://github.com/phish108/oidc-redis-adapter.git"
   },
   "devDependencies": {
