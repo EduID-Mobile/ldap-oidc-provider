@@ -281,13 +281,16 @@ class Configurator {
 
         if (typeof pwd === "string" && pwd.length){
             debug("login user data via userAdapter");
-            userData = await userAdapter.findAndBind(login, pwd);
+            const userConnection = await userAdapter.findAndBind(login, pwd);
+
             debug("userData: %O", userData);
-            if (userData && userData.length) {
+            userData = userConnection.find(null, "base");
+
+            if (userData) {
 
                 debug("initialize the account %s", this.accountInfo.id);
 
-                return this.accountById(userData[0][this.accountInfo.id]);
+                return this.accountById(userData[this.accountInfo.id]);
             }
 
             throw new Error("Login Failed");
@@ -296,7 +299,7 @@ class Configurator {
         debug("find user without login");
         userData = await userAdapter.findBindId(login);
 
-        return this.accountById(userData[0][this.accountInfo.id]);
+        return this.accountById(userData[this.accountInfo.id]);
     }
 
     getAcr() {
