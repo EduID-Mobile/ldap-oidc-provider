@@ -25,6 +25,9 @@
     "node": ">=8"
   },
   "dependencies": {
+    "koa-body": "^2.5.0",
+    "koa-ejs": "^4.1.1",
+    "koa-router": "^7.4.0",
     "oauth-jwt-assertion": "git+http://github.com/phish108/oauth-jwt-assertion.git",
     "oidc-ldap-adapter": "git+http://github.com/phish108/ldap-adapter.git",
     "oidc-provider": "^2.18.2",
