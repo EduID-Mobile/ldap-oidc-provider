@@ -25,22 +25,22 @@
     "node": ">=8"
   },
   "dependencies": {
-    "koa-body": "^2.5.0",
+    "koa-body": "^2.6.0",
     "koa-ejs": "^4.1.1",
     "koa-router": "^7.4.0",
     "oauth-jwt-assertion": "git+http://github.com/phish108/oauth-jwt-assertion.git",
     "oidc-ldap-adapter": "git+http://github.com/phish108/ldap-adapter.git",
-    "oidc-provider": "^2.18.2",
+    "oidc-provider": "^4.0.3",
     "oidc-redis-adapter": "git+http://github.com/phish108/oidc-redis-adapter.git"
   },
   "devDependencies": {
-    "babel-eslint": "^7.2.3",
+    "babel-eslint": "^8.2.3",
     "chai": "^3.5.0",
-    "chai-http": "^3.0.0",
+    "chai-http": "^4.0.0",
     "co-mocha": "^1.2.2",
     "eslint": "^3.0.0",
     "eslint-plugin-babel": "^4.1.2",
-    "mocha": "^3.5.3"
+    "mocha": "^5.2.0"
   },
   "repository": "BLC-HTWChur/ldap-oidc-provider"
 }
