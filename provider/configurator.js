@@ -228,9 +228,7 @@ class Configurator {
         // initialize the data sources
         this.adapter = AdapterFactory(settings.connections, settings.adapters);
 
-        settings.interactionUrl = function (ctx, ia) { // eslint-disable-line no-unused-vars
-            return `${settings.urls.interaction}${ctx.oidc.uuid}`;
-        };
+        settings.interactionUrl = (ctx) => `${settings.urls.interaction}${ctx.oidc.uuid}`;
 
         if (settings.urls.homepage) {
             settings.discovery.service_documentation = settings.urls.homepage;
