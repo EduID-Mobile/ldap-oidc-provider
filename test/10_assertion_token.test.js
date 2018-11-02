@@ -12,7 +12,7 @@ const url = require("url");
 const chai = require("chai");
 const jose = require("node-jose");
 
-const { encode, decode } = require("base64url");
+const { decode } = require("base64url");
 
 const chaihttp = require("chai-http");
 const kl = require("../provider/helper/keyloader");
