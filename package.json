@@ -5,7 +5,7 @@
   "description": "An OIDC Provider to work in LDAP environment.",
   "main": "provider/index.js",
   "scripts": {
-    "start": "node provider/index.js -v",
+    "start": "node provider/index.js",
     "test": "mocha"
   },
   "keywords": [
@@ -44,6 +44,6 @@
   },
   "repository": "EduID-Mobile/ldap-oidc-provider",
   "bin": {
-      "oidcd": "provider/index.js"
+      "oidcd": "./provider/index.js"
   }
 }

@@ -1,5 +1,4 @@
-"use strict";
-
+#!/usr/bin/env node
 const Debug = require("debug");
 const param = require("./helper/optionparser.js");
 const fs    = require("fs");
