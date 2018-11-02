@@ -5,7 +5,7 @@
   "description": "An OIDC Provider to work in LDAP environment.",
   "main": "provider/index.js",
   "scripts": {
-    "start": "node provider/index.js -v",
+    "start": "oidcd -v",
     "test": "mocha"
   },
   "keywords": [
@@ -28,10 +28,10 @@
     "koa-body": "^2.6.0",
     "koa-ejs": "^4.1.2",
     "koa-router": "^7.4.0",
-    "oauth-jwt-assertion": "git+http://github.com/phish108/oauth-jwt-assertion.git",
-    "oidc-ldap-adapter": "git+http://github.com/phish108/ldap-adapter.git",
+    "oauth-jwt-assertion": "github:phish108/oauth-jwt-assertion",
+    "oidc-ldap-adapter": "githubphish108/ldap-adapter",
     "oidc-provider": "^4.8.3",
-    "oidc-redis-adapter": "git+http://github.com/phish108/oidc-redis-adapter.git"
+    "oidc-redis-adapter": "github:phish108/oidc-redis-adapter"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.6",
@@ -42,5 +42,8 @@
     "eslint-plugin-babel": "^4.1.2",
     "mocha": "^5.2.0"
   },
-  "repository": "BLC-HTWChur/ldap-oidc-provider"
+  "repository": "EduID-Mobile/ldap-oidc-provider",
+  "bin": {
+      "oidcd": "provider/index.js"
+  }
 }
