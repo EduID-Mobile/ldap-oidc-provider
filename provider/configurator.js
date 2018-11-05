@@ -93,7 +93,7 @@ async function loadCfgFile(configFile) {
     }
     catch (err) {
         debug(`[WARNING] config from ${configFile} is not json  %O`, err);
-        debug(`[WARNING] config from ${configFile} use the plain value`, cfg);
+        debug(`[WARNING] data from ${configFile} used as a flat value %s`, cfg);
         return cfg;
     }
 
