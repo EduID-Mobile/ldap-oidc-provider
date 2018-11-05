@@ -92,7 +92,8 @@ async function loadCfgFile(configFile) {
         cfgObj = JSON.parse(cfg.trim());
     }
     catch (err) {
-        debug(`config from ${configFile} is not json  %O`, err);
+        debug(`[WARNING] config from ${configFile} is not json  %O`, err);
+        debug(`[WARNING] config from ${configFile} use the plain value`, cfg);
         return cfg;
     }
 
