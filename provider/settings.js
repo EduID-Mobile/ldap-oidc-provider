@@ -14,9 +14,9 @@ module.exports = {
     "pairwiseSalt": "/etc/oidc/pairwise_salt",
     "adapters": "/etc/oidc/adapters.json",
     "urls": {
-        "issuer": "https://example.com/oidc",
-        "interaction": "https://example.com/oidc/interaction/",
-        "homepage": "https://example.com",
+        "issuer": "http://localhost:3000/",
+        "interaction": "http://localhost:3000/interaction/",
+        "homepage": "https://localhost:3000",
     },
     acrValues: ["session", "urn:mace:switch.ch:SWITCHaai:eduid.ch"],
     cookies: {

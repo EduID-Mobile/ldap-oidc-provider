@@ -119,6 +119,7 @@ class Configurator {
     }
 
     async initProvider() {
+        debug(`[INFO] issuerUrl is ${this.issuerUrl}`);
         this.provider = new Provider(this.issuerUrl, this.settings);
 
         this.registerGrantTypes();
