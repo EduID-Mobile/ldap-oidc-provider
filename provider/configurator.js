@@ -1,8 +1,12 @@
 "use strict";
 
 const Debug = require("debug");
-const debug = Debug("ldap-oidc:configurator");
-const assert = require("assert");
+const debug   = Debug("ldap-oidc:configurator");
+const fatal   = Debug("ldap-oidc:configurator:error");
+const warning = Debug("ldap-oidc:configurator:warn");
+
+// no fatal errors
+// const assert = require("assert");
 
 // const _ = require("lodash");
 const fs = require("./helper/asyncfs");
@@ -84,7 +88,7 @@ async function loadCfgFile(configFile) {
     let cfgObj = {};
 
     if (!cfg) {
-        debug(`config not loaded ${configFile}`);
+        fatal(`config not loaded ${configFile}`);
         return cfgObj;
     }
 
@@ -92,8 +96,8 @@ async function loadCfgFile(configFile) {
         cfgObj = JSON.parse(cfg.trim());
     }
     catch (err) {
-        debug(`[WARNING] config from ${configFile} is not json  %O`, err);
-        debug(`[WARNING] data from ${configFile} used as a flat value %s`, cfg);
+        warning(`[WARNING] config from ${configFile} is not json  %O`, err);
+        warning(`[WARNING] data from ${configFile} used as a flat value %s`, cfg);
         return cfg;
     }
 
@@ -119,7 +123,7 @@ class Configurator {
     }
 
     async initProvider() {
-        debug(`[INFO] issuerUrl is ${this.issuerUrl}`);
+        warning(`[INFO] issuerUrl is ${this.issuerUrl}`);
         this.provider = new Provider(this.issuerUrl, this.settings);
 
         this.registerGrantTypes();
@@ -185,11 +189,19 @@ class Configurator {
         debug(filename);
         debug(`defaults: ${Object.keys(defaultSettings).join(",")}`);
 
-        assert(filename, "Cannot find OIDC configuration file");
 
-        // proces the basic configuration
-        const config = await loadConfiguration(filename);
         const dflt = Object.assign({}, defaultSettings);
+        let config = {};
+
+        if (filename) {
+            // proces the basic configuration
+            config = await loadConfiguration(filename);
+        }
+        else {
+            warning("Cannot find OIDC configuration file, work with defaults");
+            // assert(filename, "Cannot find OIDC configuration file");
+        }
+
         // overwrite the default values
         const settings = Object.assign(dflt, config);
 
@@ -269,7 +281,8 @@ class Configurator {
     }
 
     async accountByLogin(login, pwd) {
-        debug("account by login %s %s", login, pwd);
+        // debug("account by login %s %s", login, pwd);
+        debug("account by login %s", login);
 
         const userAdapter = this.adapter("Account");
 
@@ -292,7 +305,7 @@ class Configurator {
 
                 return this.accountById(userData[this.accountInfo.id]);
             }
-
+            fatal("login failed");
             throw new Error("Login Failed");
         }
 
